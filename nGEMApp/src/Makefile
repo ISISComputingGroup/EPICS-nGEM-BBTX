@@ -5,17 +5,23 @@ include $(TOP)/configure/CONFIG
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
 #=============================
 
-# Build the IOC support library
-
 USR_INCLUDES += -I"$(TOP)/../../libraries/boost/include" -I"$(AREA_DETECTOR)"
-USR_CXXFLAGS_WIN32 += /DNOMINMAX
+
+## We use -EHa so windows structured exceptions are catachable with C++ catch(...) 
+USR_CXXFLAGS_WIN32 += -DNOMINMAX
 
 LIBRARY_IOC += nGEM
-#GP2Camera_SRCS += GP2CameraDriver.cpp
 
-nGEM_LIBS += asyn oncrpc utilities zlib pcrecpp pcre pugixml
+nGEM_LIBS += webget htmltidy asyn utilities zlib pcrecpp pcre pugixml
+nGEM_LIBS += cas gdd
 nGEM_LIBS += $(EPICS_BASE_IOC_LIBS)
 
+nGEM_LIBS_WIN32 += oncrpc
+
+nGEM_SYS_LIBS_WIN32 += psapi
+
+# isisdae.dbd will be created and installed
+# see isisdaeInclude.dbd
 DBD += nGEM.dbd
 
 include $(ADCORE)/ADApp/commonLibraryMakefile

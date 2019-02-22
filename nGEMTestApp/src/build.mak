@@ -31,8 +31,6 @@ $(APPNAME)_DBD += asubFunctions.dbd
 $(APPNAME)_DBD += nGEM.dbd
 $(APPNAME)_DBD += webget.dbd
 $(APPNAME)_DBD += FileList.dbd
-$(APPNAME)_DBD += ADnEDSupport.dbd
-$(APPNAME)_DBD += ffmpegServer.dbd
 
 # Add all the support libraries needed by this IOC
 ## ISIS standard libraries ##
@@ -47,20 +45,11 @@ $(APPNAME)_LIBS += utilities
 $(APPNAME)_LIBS += asubFunctions
 ## Add other libraries here ##
 #$(APPNAME)_LIBS += xxx
-$(APPNAME)_LIBS += isisdae FileList asyn oncrpc zlib efsw libjson pcrecpp pcre pugixml
+$(APPNAME)_LIBS += FileList asyn zlib efsw libjson pcrecpp pcre pugixml
 $(APPNAME)_LIBS += cas gdd 
-$(APPNAME)_LIBS += ffmpegServer
-$(APPNAME)_LIBS += avdevice
-$(APPNAME)_LIBS += avformat
-$(APPNAME)_LIBS += avcodec
-$(APPNAME)_LIBS += avutil
-$(APPNAME)_LIBS += swscale
-$(APPNAME)_LIBS += ADnEDSupport
-$(APPNAME)_LIBS += ADnEDTransform
 
-$(APPNAME)_LIBS_WIN32 += libcurl
+$(APPNAME)_LIBS_WIN32 += libcurl oncrpc
 $(APPNAME)_SYS_LIBS_Linux += curl
-
 
 # isisdaeTest_registerRecordDeviceDriver.cpp derives from isisdaeTest.dbd
 $(APPNAME)_SRCS += $(APPNAME)_registerRecordDeviceDriver.cpp
