@@ -5,24 +5,23 @@ include $(TOP)/configure/CONFIG
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
 #=============================
 
-#==================================================
-# build a support library
+# Build the IOC support library
+
+USR_INCLUDES += -I"$(TOP)/../../libraries/boost/include" -I"$(AREA_DETECTOR)"
+USR_CXXFLAGS_WIN32 += /DNOMINMAX
 
 LIBRARY_IOC += nGEM
+#GP2Camera_SRCS += GP2CameraDriver.cpp
 
-# xxxRecord.h will be created from xxxRecord.dbd
-#DBDINC += xxxRecord
-# install nGEM.dbd into <top>/dbd
+nGEM_LIBS += asyn oncrpc utilities zlib pcrecpp pcre pugixml
+nGEM_LIBS += $(EPICS_BASE_IOC_LIBS)
+
 DBD += nGEM.dbd
 
-# specify all source files to be compiled and added to the library
-#nGEM_SRCS += xxx
-
-nGEM_LIBS += $(EPICS_BASE_IOC_LIBS)
+include $(ADCORE)/ADApp/commonLibraryMakefile
 
 #===========================
 
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
-
