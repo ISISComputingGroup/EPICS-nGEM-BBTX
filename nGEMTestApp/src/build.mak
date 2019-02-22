@@ -31,6 +31,7 @@ $(APPNAME)_DBD += asubFunctions.dbd
 $(APPNAME)_DBD += nGEM.dbd
 $(APPNAME)_DBD += webget.dbd
 $(APPNAME)_DBD += FileList.dbd
+$(APPNAME)_DBD += drvAsynIPPort.dbd
 
 # Add all the support libraries needed by this IOC
 ## ISIS standard libraries ##
@@ -40,12 +41,13 @@ $(APPNAME)_LIBS += devIocStats
 $(APPNAME)_LIBS += pvdump $(MYSQLLIB) easySQLite sqlite 
 $(APPNAME)_LIBS += caPutLog
 $(APPNAME)_LIBS += icpconfig
+$(APPNAME)_LIBS += FileList
 $(APPNAME)_LIBS += autosave
 $(APPNAME)_LIBS += utilities
 $(APPNAME)_LIBS += asubFunctions
 ## Add other libraries here ##
 #$(APPNAME)_LIBS += xxx
-$(APPNAME)_LIBS += FileList asyn zlib efsw libjson pcrecpp pcre pugixml
+$(APPNAME)_LIBS +=  asyn zlib efsw libjson pcrecpp pcre pugixml
 $(APPNAME)_LIBS += cas gdd 
 
 $(APPNAME)_LIBS_WIN32 += libcurl oncrpc
