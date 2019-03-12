@@ -15,4 +15,4 @@ dbLoadDatabase "dbd/nGEMTest.dbd"
 nGEMTest_registerRecordDeviceDriver pdbbase
 
 ## calling common command file in ioc 01 boot dir
-< ${TOP}/iocBoot/ioc_01_APP_NAME_/st-common.cmd
+< ${TOP}/iocBoot/iocnGEMTest/st-common.cmd

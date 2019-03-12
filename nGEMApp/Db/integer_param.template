@@ -1,0 +1,14 @@
+record(longin, "$(P)$(Q)$(NAME)")
+{
+    field(DESC,"$(DESC)")
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),0,1)$(NAME)_$(TYPE)")
+	field(SCAN, "I/O Intr")
+}
+
+record(longout, "$(P)$(Q)$(NAME):SP")
+{
+    field(DESC,"$(DESC)")
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),0,1)$(NAME)_$(TYPE)")
+}

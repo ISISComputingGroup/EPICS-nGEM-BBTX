@@ -16,3 +16,5 @@ runIOC.bat
 runIOC.sh
 relPaths.sh
 .project
+*_info_positions.req
+*_info_settings.req
