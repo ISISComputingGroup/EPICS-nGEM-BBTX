@@ -1,3 +1,6 @@
+## pass run number, -ve means increment current
+## run number by abs(value) specified e.g. -1 means 
+## increment current run number by 1
 record(longout, "$(P)$(Q)START:SP")
 {
     field(DTYP, "asynInt32")
@@ -36,7 +39,7 @@ record(waveform, "$(P)$(Q)1DTOF")
 {
     field(DTYP, "asynFloat64ArrayIn")
 	field(FTVL, "DOUBLE")
-	field(NELM, "10000")
+	field(NELM, "50000")
     field(INP, "@asyn($(PORT),0,1)1DTOF")
 	field(PINI, "YES")
 }
@@ -59,6 +62,43 @@ record(waveform, "$(P)$(Q)1DSY")
 #	field(SCAN, "I/O Intr")
 }
 
+record(waveform, "$(P)$(Q)2DFXY")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "16384")
+    field(INP, "@asyn($(PORT),0,1)2DFXY")
+#	field(SCAN, "I/O Intr")
+}
+
+record(waveform, "$(P)$(Q)2DLXY")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "16384")
+    field(INP, "@asyn($(PORT),0,1)2DLXY")
+#	field(SCAN, "I/O Intr")
+}
+
+record(waveform, "$(P)$(Q)2DAVG")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "16384")
+    field(INP, "@asyn($(PORT),0,1)2DAVG")
+#	field(SCAN, "I/O Intr")
+}
+
+record(waveform, "$(P)$(Q)2DRNG")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "16384")
+    field(INP, "@asyn($(PORT),0,1)2DRNG")
+#	field(SCAN, "I/O Intr")
+}
+
+## mbbi names should match DiplayMode enum in asyn driver
 record(mbbo, "$(P)$(Q)DISPLAY:SP")
 {
     field(DTYP, "asynInt32")
@@ -67,10 +107,10 @@ record(mbbo, "$(P)$(Q)DISPLAY:SP")
     field(ONVL, 1)
     field(TWVL, 2)
     field(THVL, 3)
-    field(ZRST, "fxy")
-    field(ONST, "lxy")
-    field(TWST, "avg")
-    field(THST, "rng")
+    field(ZRST, "2dfxy")
+    field(ONST, "2dlxy")
+    field(TWST, "2davg")
+    field(THST, "2drng")
 }
 
 record(mbbi, "$(P)$(Q)DISPLAY")
@@ -81,9 +121,9 @@ record(mbbi, "$(P)$(Q)DISPLAY")
     field(ONVL, 1)
     field(TWVL, 2)
     field(THVL, 3)
-    field(ZRST, "fxy")
-    field(ONST, "lxy")
-    field(TWST, "avg")
-    field(THST, "rng")
+    field(ZRST, "2dfxy")
+    field(ONST, "2dlxy")
+    field(TWST, "2davg")
+    field(THST, "2drng")
 	field(SCAN, "I/O Intr")
 }

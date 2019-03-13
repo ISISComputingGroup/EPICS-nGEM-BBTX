@@ -25,12 +25,13 @@ public:
 	
     virtual void report(FILE *fp, int details);
     virtual void setShutter(int open);
+	enum DiplayMode { Display2DFXY=0, Display2DLXY=1, Display2DAVG=2, Display2DRNG=3 }; ///< must match mbbi in EPICS DB
 
 private:
     enum ParamGroup { GroupSettings=0, GroupStats=1 };
     map_t m_settings;
     map_t m_stats;
-    void addParam(const char* name, ParamGroup group, asynParamType type);
+    int addParam(const char* name, ParamGroup group, asynParamType type);
     void processData();
 	template <typename T> asynStatus setGEMParam(int param_id, T value);
 	
@@ -42,9 +43,17 @@ private:
 	int P_1dtof; // float64array
 	int P_1dsx; // float64array
 	int P_1dsy; // float64array
+	int P_2dfxy; // float64array
+	int P_2dlxy; // float64array
+	int P_2davg; // float64array
+	int P_2drng; // float64array
 	int P_display; // int
 	int P_stats; // int
 	int P_settings; // int
+	
+	// these are returned from addParam()
+	int P_daqStatus; // string
+	int P_runNo; // string
 
 #define NUM_NGEM_PARAMS 100
 #define FIRST_NGEM_PARAM P_start
@@ -75,6 +84,10 @@ private:
 #define P_1dtofString			"1DTOF"
 #define P_1dsxString			"1DSX"
 #define P_1dsyString			"1DSY"
+#define P_2dfxyString			"2DFXY"
+#define P_2dlxyString			"2DLXY"
+#define P_2davgString			"2DAVG"
+#define P_2drngString			"2DRNG"
 #define P_displayString			"DISPLAY"
 #define P_statsString			"STATS"
 #define P_settingsString		"SETTINGS"

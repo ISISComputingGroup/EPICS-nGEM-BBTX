@@ -38,7 +38,7 @@
 
 #include <epicsExport.h>
 
-void nGEMDriver::addParam(const char* name, ParamGroup group, asynParamType type)
+int nGEMDriver::addParam(const char* name, ParamGroup group, asynParamType type)
 {
 	int id;
 	std::map<std::string,nGEMParam*>* pMap;
@@ -69,6 +69,7 @@ void nGEMDriver::addParam(const char* name, ParamGroup group, asynParamType type
 	{
 		throw std::runtime_error("problem");
 	}
+	return id;
 }
 
 static const char *driverName="nGEMDriver";
@@ -137,6 +138,10 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
 	createParam(P_1dtofString, asynParamFloat64Array, &P_1dtof);
 	createParam(P_1dsxString, asynParamFloat64Array, &P_1dsx);
 	createParam(P_1dsyString, asynParamFloat64Array, &P_1dsy);
+	createParam(P_2dfxyString, asynParamFloat64Array, &P_2dfxy);
+	createParam(P_2dlxyString, asynParamFloat64Array, &P_2dlxy);
+	createParam(P_2davgString, asynParamFloat64Array, &P_2davg);
+	createParam(P_2drngString, asynParamFloat64Array, &P_2drng);
 	createParam(P_displayString, asynParamInt32, &P_display);
 	createParam(P_statsString, asynParamInt32, &P_stats);
 	createParam(P_settingsString, asynParamInt32, &P_settings);
@@ -167,9 +172,9 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
     addParam("normalize2drng", GroupSettings, asynParamOctet); // on or off
 
 	// stats
-    addParam("Daq Status", GroupStats, asynParamOctet); // Stop
+    P_daqStatus = addParam("Daq Status", GroupStats, asynParamOctet); // Stop
     addParam("Load Status", GroupStats, asynParamOctet); // Stop
-    addParam("Run No", GroupStats, asynParamInt32);
+    P_runNo = addParam("Run No", GroupStats, asynParamInt32);
     addParam("Logging Prefix", GroupStats, asynParamOctet);
     addParam("Loading Run No", GroupStats, asynParamInt32);
     addParam("Loading CPU", GroupStats, asynParamInt32);
@@ -263,10 +268,10 @@ asynStatus nGEMDriver::writeReadData(const char* output, char* input, size_t inp
 		  break;
 	  }
   }
-  std::cerr << "OUT:\"" << output << "\" nout=" << nwrite << std::endl;
-  std::cerr << "STATUS:" << status << std::endl;
+  std::cout << "OUT:\"" << output << "\" nout=" << nwrite << std::endl;
   if (status != asynSuccess && status != asynTimeout)
   {
+      std::cerr << "STATUS:" << status << std::endl;
 	  return status;
   }
   if (nread_total < inputLen)
@@ -278,7 +283,7 @@ asynStatus nGEMDriver::writeReadData(const char* output, char* input, size_t inp
       input[inputLen-1] = '\0';
   }
 //  std::cerr << "IN:\"" << input << "\" nin=" << nread_total << std::endl;
-  std::cerr << "IN: nin=" << nread_total << std::endl;
+  std::cout << "IN: nin=" << nread_total << std::endl;
   return status;
 }
 
@@ -328,6 +333,7 @@ asynStatus nGEMDriver::convertData(void* buffer, double* data, int nin, size_t& 
 	int nbytes = *(int*)buffer;
 	if (nbytes % 8 != 0)
 	{
+		std::cerr << "array size mismatch " << nout << std::endl;
 		return asynError;
 	}
 	nout = nbytes / 8;
@@ -354,13 +360,25 @@ asynStatus nGEMDriver::readFloat64Array(asynUser *pasynUser, epicsFloat64 *value
 		writeReadData("1dsy b", buffer, sizeof(buffer));		
 	} else if (function == P_1dtof) {
 		writeReadData("1dtof b", buffer, sizeof(buffer));		
+	} else if (function == P_2dfxy) {
+		writeReadData("2dfxy b", buffer, sizeof(buffer));		
+	} else if (function == P_2dlxy) {
+		writeReadData("2dlxy b", buffer, sizeof(buffer));		
+	} else if (function == P_2davg) {
+		writeReadData("2davg b", buffer, sizeof(buffer));		
+	} else if (function == P_2drng) {
+		writeReadData("2drng b", buffer, sizeof(buffer));		
+	} else {
+		return asynError;
+	}
+	if (convertData(buffer, value, nElements, *nIn) == asynSuccess)
+	{
+		doCallbacksFloat64Array(value, *nIn, function, 0);
 	}
 	else
 	{
 		return asynError;
 	}
-	convertData(buffer, value, nElements, *nIn);
-	doCallbacksFloat64Array(value, *nIn, function, 0);
     return asynSuccess;
 }
 
@@ -385,6 +403,7 @@ void nGEMDriver::pollerThread1()
 		readSettings(); // check for external changes?
 		readStats();
 		getIntegerParam(ADAcquire, &acquiring);
+//		getStrtingParam(P_daqStatus, daqStatus, suzeof(); // current number
 		if (acquiring == 0)
 		{
 		    m_old_acquiring = acquiring;
@@ -407,6 +426,12 @@ asynStatus nGEMDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 	}
 	else if (function == P_start)
 	{
+		int runNo;
+		getIntegerParam(P_runNo, &runNo); // current number
+		if (value < 0) {
+			value = -value + runNo; // if negative, increment by this
+		}
+		std::cerr << "START: run number: old=" << runNo << ", new=" << value << std::endl;
 		sprintf(output, "start %d", value);
 		status = writeReadData(output, input, sizeof(input));
 		if (!strcmp(input, "OK:Started"))
@@ -575,17 +600,19 @@ void nGEMDriver::processData()
 	    getIntegerParam(P_display, &display);
 	    switch(display)
 	    {
-		case 0:
+		case Display2DFXY:
 		    writeReadData("2dfxy b", buffer, sizeof(buffer));
 			break;
-		case 1:
+		case Display2DLXY:
 		    writeReadData("2dlxy b", buffer, sizeof(buffer));
 			break;
-		case 2:
+		case Display2DAVG:
 		    writeReadData("2davg b", buffer, sizeof(buffer));
 			break;
-		case 3:
+		case Display2DRNG:
 		    writeReadData("2drng b", buffer, sizeof(buffer));
+			break;
+		default:
 			break;
 	    }
 	    convertData(buffer, value, sizeof(value) / sizeof(double), nelements);

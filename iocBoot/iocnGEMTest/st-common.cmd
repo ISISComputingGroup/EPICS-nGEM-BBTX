@@ -2,11 +2,12 @@
 ##ISIS## Run IOC initialisation 
 < $(IOCSTARTUP)/init.cmd
 
-## Device simulation mode IP configuration
-drvAsynIPPortConfigure("IP1", "$(IPADDR=localhost:61000)")
-asynOctetSetOutputEos("IP1",0,"\n")
-# we do not set an input EOS as this varies with command
+epicsEnvSet("EPICS_CA_MAX_ARRAY_BYTES", "500000")
 
+## Device simulation mode IP configuration
+drvAsynIPPortConfigure("IP1","$(IPADDR=localhost:61000)")
+asynOctetSetOutputEos("IP1",0,"\n")
+## we do not set an input EOS, we look to match ngem> in the driver
 nGEMConfigure("P1","IP1")
 
 ## Load record instances
