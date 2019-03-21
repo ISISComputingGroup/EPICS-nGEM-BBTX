@@ -145,16 +145,20 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
 	createParam(P_displayString, asynParamInt32, &P_display);
 	createParam(P_statsString, asynParamInt32, &P_stats);
 	createParam(P_settingsString, asynParamInt32, &P_settings);
+	createParam(P_1dsxtString, asynParamFloat64Array, &P_1dsxt);
+	createParam(P_1dsytString, asynParamFloat64Array, &P_1dsyt);
+	createParam(P_tofString, asynParamFloat64Array, &P_tof);
+	createParam(P_ntofString, asynParamInt32, &P_ntof);
 	
 	// settings
-    addParam("inst", GroupSettings, asynParamOctet);
-    addParam("basepath", GroupSettings, asynParamOctet);
+    P_inst = addParam("inst", GroupSettings, asynParamOctet);
+    P_basepath = addParam("basepath", GroupSettings, asynParamOctet);
     addParam("logging", GroupSettings, asynParamOctet); // on or off
     addParam("host", GroupSettings, asynParamOctet);
     addParam("tcp", GroupSettings, asynParamInt32);
-    addParam("tofmin", GroupSettings, asynParamInt32);
-    addParam("tofmax", GroupSettings, asynParamInt32);
-    addParam("tofwidth", GroupSettings, asynParamInt32);
+    P_tofmin = addParam("tofmin", GroupSettings, asynParamFloat64);
+    P_tofmax = addParam("tofmax", GroupSettings, asynParamFloat64);
+    P_tofwidth = addParam("tofwidth", GroupSettings, asynParamFloat64);
     addParam("fdtofmin", GroupSettings, asynParamInt32);
     addParam("fdtofmax", GroupSettings, asynParamInt32);
     addParam("f2dabsxmin", GroupSettings, asynParamInt32);
@@ -204,7 +208,7 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
 
     // area detector defaults
 	int maxSizeX = 128, maxSizeY = 128;
-	NDDataType_t dataType = NDUInt8; // data type for each frame
+	NDDataType_t dataType = NDFloat64; // data type for each frame
     status =  setStringParam (ADManufacturer, "nGEM");
     status |= setStringParam (ADModel, "nGEM");
     status |= setIntegerParam(ADMaxSizeX, maxSizeX);
@@ -226,6 +230,8 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
     status |= setDoubleParam (ADAcquirePeriod, .005);
     status |= setIntegerParam(ADNumImages, 100);
 
+	setIntegerParam(ADAcquire, 0);
+
     if (status) {
         printf("%s: unable to set nGEM parameters\n", functionName);
         return;
@@ -244,11 +250,29 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
     }
 }
 
+void nGEMDriver::computeTOF()
+{
+    double tofmin, tofmax, tofwidth;
+	int ntof;
+	getDoubleParam(P_tofmin, &tofmin);
+	getDoubleParam(P_tofmax, &tofmax);
+	getDoubleParam(P_tofwidth, &tofwidth);
+	if (tofmax > tofmin && tofwidth != 0)
+	{
+        ntof = (tofmax - tofmin) / tofwidth;
+	    setIntegerParam(P_ntof, ntof);
+		m_tof.resize(ntof);
+		for(int i=0; i<ntof; ++i)
+		{
+			m_tof[i] = tofmin + i * tofwidth;
+		}
+		doCallbacksFloat64Array(&(m_tof[0]), m_tof.size(), P_tof, 0);		
+	}
+}	
+	
 asynStatus nGEMDriver::writeData(const char* output, int timeout)
 {
   size_t nwrite = 0;
-//  asynStatus status = pasynOctetSyncIO->write(m_detPort, output,
-//                                   strlen(output), timeout, &nwrite);
   asynStatus status = m_det->write(output, strlen(output), &nwrite);
   return status;
 }
@@ -268,7 +292,7 @@ asynStatus nGEMDriver::writeReadData(const char* output, char* input, size_t inp
 		  break;
 	  }
   }
-  std::cout << "OUT:\"" << output << "\" nout=" << nwrite << std::endl;
+//  std::cout << "OUT:\"" << output << "\" nout=" << nwrite << std::endl;
   if (status != asynSuccess && status != asynTimeout)
   {
       std::cerr << "STATUS:" << status << std::endl;
@@ -283,7 +307,7 @@ asynStatus nGEMDriver::writeReadData(const char* output, char* input, size_t inp
       input[inputLen-1] = '\0';
   }
 //  std::cerr << "IN:\"" << input << "\" nin=" << nread_total << std::endl;
-  std::cout << "IN: nin=" << nread_total << std::endl;
+//  std::cout << "IN: nin=" << nread_total << std::endl;
   return status;
 }
 
@@ -341,7 +365,7 @@ asynStatus nGEMDriver::convertData(void* buffer, double* data, int nin, size_t& 
 	{
 		nout = nin;
 	}
-	std::cerr << "read array size " << nout << std::endl;
+//	std::cerr << "read array size " << nout << std::endl;
 	memcpy(data, (char*)buffer + 4, nout * 8);
 	return asynSuccess;
 }	
@@ -350,11 +374,34 @@ asynStatus nGEMDriver::readFloat64Array(asynUser *pasynUser, epicsFloat64 *value
 {
 	static char buffer[1000000];
 	int function = pasynUser->reason;
+	size_t n;
+	bool convert = true;
 	if (function < FIRST_NGEM_PARAM)
 	{
 		return ADDriver::readFloat64Array(pasynUser, value, nElements, nIn);
 	}
-	if (function == P_1dsx) {
+	if (function == P_tof) {
+		n = (nElements < m_tof.size() ? nElements : m_tof.size());
+	    std::copy(value, value + n, &(m_tof[0]));
+		*nIn = n;
+		convert = false;
+	} else if (function == P_1dsxt) {
+		n = (nElements < 1024 ? nElements : 1024);
+		for(int i=0; i<n; ++i)
+		{
+			value[i] = i;
+		}
+		*nIn = n;
+		convert = false;
+	} else if (function == P_1dsyt) {
+		n = (nElements < 1024 ? nElements : 1024);
+		for(int i=0; i<n; ++i)
+		{
+			value[i] = i;
+		}
+		*nIn = n;
+		convert = false;
+	} else if (function == P_1dsx) {
 		writeReadData("1dsx b", buffer, sizeof(buffer));
 	} else if (function == P_1dsy) {
 		writeReadData("1dsy b", buffer, sizeof(buffer));		
@@ -371,6 +418,8 @@ asynStatus nGEMDriver::readFloat64Array(asynUser *pasynUser, epicsFloat64 *value
 	} else {
 		return asynError;
 	}
+	if ( convert )
+	{
 	if (convertData(buffer, value, nElements, *nIn) == asynSuccess)
 	{
 		doCallbacksFloat64Array(value, *nIn, function, 0);
@@ -378,6 +427,7 @@ asynStatus nGEMDriver::readFloat64Array(asynUser *pasynUser, epicsFloat64 *value
 	else
 	{
 		return asynError;
+	}
 	}
     return asynSuccess;
 }
@@ -395,19 +445,20 @@ void nGEMDriver::pollerThreadC1(void* arg)
 void nGEMDriver::pollerThread1()
 {
     static const char* functionName = "nGEMDriverPoller1";
-	int acquiring;
+	int acquiring = 0;
 	while(true)
 	{
 		epicsThreadSleep(2.0);
 		lock();
 		readSettings(); // check for external changes?
 		readStats();
+		computeTOF();
 		getIntegerParam(ADAcquire, &acquiring);
-//		getStrtingParam(P_daqStatus, daqStatus, suzeof(); // current number
 		if (acquiring == 0)
 		{
 		    m_old_acquiring = acquiring;
 		}
+		processData();
 		callParamCallbacks();
 		unlock();
 	}
@@ -434,15 +485,12 @@ asynStatus nGEMDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 		std::cerr << "START: run number: old=" << runNo << ", new=" << value << std::endl;
 		sprintf(output, "start %d", value);
 		status = writeReadData(output, input, sizeof(input));
-		if (!strcmp(input, "OK:Started"))
+		if (strcmp(input, "OK:Started") != 0)
 		{
-			;
+			return asynError;
 		}
-		else
-		{
-			;
-		}
-	}		
+		setADAcquire(1);
+	}
 	else if (function == P_stop)
 	{
 		status = writeReadData("stop", input, sizeof(input));
@@ -450,11 +498,11 @@ asynStatus nGEMDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 		{
 			return asynError;
 		}
+		setADAcquire(0);
 	}
 	else if (function == P_updatetof)
 	{
 		status = writeReadData("updatetof", input, sizeof(input));
-		// need to reread P_1dtof
 	}	
 	else if (function == P_settings)
 	{
@@ -568,10 +616,10 @@ asynStatus nGEMDriver::readOctet(asynUser *pasynUser, char *value, size_t maxCha
 	}
 }
 
+// called with asyn lock
 void nGEMDriver::processData()
 {
-#if 0
-    static const char* functionName = "processCameraData";
+    static const char* functionName = "processData";
 	static char buffer[1000000];
 	static double value[1000000];
 	int display;
@@ -586,110 +634,104 @@ void nGEMDriver::processData()
     double acquireTime, acquirePeriod, delay;
     epicsTimeStamp startTime, endTime;
     double elapsedTime;
-	char filename[256];
-	while(true)
-	{
-		lock();
 		getIntegerParam(ADAcquire, &acquiring);
-		if (acquiring == 0)
+//		if (acquiring == 0)
+//		{
+//			m_old_acquiring = acquiring;
+//			unlock();
+//			continue;
+//		}
+		getIntegerParam(P_display, &display);
+		switch (display)
 		{
-			m_old_acquiring = acquiring;
-			unlock();
-			continue;
-		}
-	    getIntegerParam(P_display, &display);
-	    switch(display)
-	    {
 		case Display2DFXY:
-		    writeReadData("2dfxy b", buffer, sizeof(buffer));
+			writeReadData("2dfxy b", buffer, sizeof(buffer));
 			break;
 		case Display2DLXY:
-		    writeReadData("2dlxy b", buffer, sizeof(buffer));
+			writeReadData("2dlxy b", buffer, sizeof(buffer));
 			break;
 		case Display2DAVG:
-		    writeReadData("2davg b", buffer, sizeof(buffer));
+			writeReadData("2davg b", buffer, sizeof(buffer));
 			break;
 		case Display2DRNG:
-		    writeReadData("2drng b", buffer, sizeof(buffer));
+			writeReadData("2drng b", buffer, sizeof(buffer));
 			break;
 		default:
 			break;
-	    }
-	    convertData(buffer, value, sizeof(value) / sizeof(double), nelements);
-        getDoubleParam(ADAcquirePeriod, &acquirePeriod);
-		if (m_old_acquiring == 0)
-		{
-            setIntegerParam(ADNumImagesCounter, 0);
-			m_old_acquiring = acquiring;
-        }
-        setIntegerParam(ADStatus, ADStatusAcquire); 
+		}
+		convertData(buffer, value, sizeof(value) / sizeof(double), nelements);
+		getDoubleParam(ADAcquirePeriod, &acquirePeriod);
+//		if (m_old_acquiring == 0)
+//		{
+//			setIntegerParam(ADNumImagesCounter, 0);
+//			m_old_acquiring = acquiring;
+//		}
+		setIntegerParam(ADStatus, ADStatusAcquire);
 		epicsTimeGetCurrent(&startTime);
-        getIntegerParam(ADImageMode, &imageMode);
+		getIntegerParam(ADImageMode, &imageMode);
 
-        /* Get the exposure parameters */
-        getDoubleParam(ADAcquireTime, &acquireTime);  // not really used
+		/* Get the exposure parameters */
+		getDoubleParam(ADAcquireTime, &acquireTime);  // not really used
 
-        setShutter(ADShutterOpen);
-        callParamCallbacks();
-            
-        /* Update the image */
-/// ddddd ////        status = computeImage(value, nelements);
-//        if (status) continue;
+		setShutter(ADShutterOpen);
+		callParamCallbacks();
+
+		/* Update the image */
+		status = computeImage(value, nelements);
+		//        if (status) continue;
 
 		// could sleep to make up to acquireTime
-		
-        /* Close the shutter */
-        setShutter(ADShutterClosed);
-        
-        setIntegerParam(ADStatus, ADStatusReadout);
-        /* Call the callbacks to update any changes */
-        callParamCallbacks();
 
-        pImage = this->pArrays[0];
+				/* Close the shutter */
+		setShutter(ADShutterClosed);
+
+		setIntegerParam(ADStatus, ADStatusReadout);
+		/* Call the callbacks to update any changes */
+		callParamCallbacks();
+
+		pImage = this->pArrays[0];
 		// setTimeStamp(epicsTS);   ??????
-		
-        /* Get the current parameters */
-        getIntegerParam(NDArrayCounter, &imageCounter);
-        getIntegerParam(ADNumImages, &numImages);
-        getIntegerParam(ADNumImagesCounter, &numImagesCounter);
-        getIntegerParam(NDArrayCallbacks, &arrayCallbacks);
-        imageCounter++;
-        numImagesCounter++;
-        setIntegerParam(NDArrayCounter, imageCounter);
-        setIntegerParam(ADNumImagesCounter, numImagesCounter);
 
-        /* Put the frame number and time stamp into the buffer */
-        pImage->uniqueId = imageCounter;
-		pImage->epicsTS = *epicsTS;
-        pImage->timeStamp = epicsTS->secPastEpoch + epicsTS->nsec / 1.e9;
-        pEventData->uniqueId = imageCounter;
-		pEventData->epicsTS = *epicsTS;
-        pEventData->timeStamp = epicsTS->secPastEpoch + epicsTS->nsec / 1.e9;
-        //getTimeStamp(&pImage->epicsTS);
+		/* Get the current parameters */
+		getIntegerParam(NDArrayCounter, &imageCounter);
+		getIntegerParam(ADNumImages, &numImages);
+		getIntegerParam(ADNumImagesCounter, &numImagesCounter);
+		getIntegerParam(NDArrayCallbacks, &arrayCallbacks);
+		imageCounter++;
+		numImagesCounter++;
+		setIntegerParam(NDArrayCounter, imageCounter);
+		setIntegerParam(ADNumImagesCounter, numImagesCounter);
 
-        /* Get any attributes that have been defined for this driver */
-        this->getAttributes(pImage->pAttributeList);
+		/* Put the frame number and time stamp into the buffer */
+		pImage->uniqueId = imageCounter;
+		pImage->timeStamp = startTime.secPastEpoch + startTime.nsec / 1.e9;
+		updateTimeStamp(&pImage->epicsTS);
+		//getTimeStamp(&pImage->epicsTS);
 
-        if (arrayCallbacks) {
-          /* Call the NDArray callback */
-          /* Must release the lock here, or we can get into a deadlock, because we can
-           * block on the plugin lock, and the plugin can be calling us */
-          this->unlock();
-          asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                    "%s:%s: calling imageData callback\n", driverName, functionName);
-          doCallbacksGenericPointer(pImage, NDArrayData, 0);
-          this->lock();
-        }
+		/* Get any attributes that have been defined for this driver */
+		this->getAttributes(pImage->pAttributeList);
 
-        /* Call the callbacks to update any changes */
-        callParamCallbacks();
-        /* sleep for the acquire period minus elapsed time. */
-        epicsTimeGetCurrent(&endTime);
-        elapsedTime = epicsTimeDiffInSeconds(&endTime, &startTime);
-        delay = acquirePeriod - elapsedTime;
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                    "%s:%s: delay=%f\n",
-                    driverName, functionName, delay);
+		if (arrayCallbacks) {
+			/* Call the NDArray callback */
+			/* Must release the lock here, or we can get into a deadlock, because we can
+			 * block on the plugin lock, and the plugin can be calling us */
+			this->unlock();
+			asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+				"%s:%s: calling imageData callback\n", driverName, functionName);
+			doCallbacksGenericPointer(pImage, NDArrayData, 0);
+			this->lock();
+		}
+
+		/* Call the callbacks to update any changes */
+		callParamCallbacks();
+		/* sleep for the acquire period minus elapsed time. */
+		epicsTimeGetCurrent(&endTime);
+		elapsedTime = epicsTimeDiffInSeconds(&endTime, &startTime);
+		delay = acquirePeriod - elapsedTime;
+		asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+			"%s:%s: delay=%f\n",
+			driverName, functionName, delay);
+	
 //        if (delay >= 0.0) {
  //           /* We set the status to waiting to indicate we are in the period delay */
 //            setIntegerParam(ADStatus, ADStatusWaiting);
@@ -700,12 +742,10 @@ void nGEMDriver::processData()
 //            setIntegerParam(ADStatus, ADStatusIdle);
 //            callParamCallbacks();  
 //        }
-        this->unlock();
-#endif
 }
-#if 0
+
 /** Computes the new image data */
-int GP2CameraDriver::computeImage(epicsInt16 *value, size_t nelements)
+int nGEMDriver::computeImage(double *value, size_t nelements)
 {
     int status = asynSuccess;
     NDDataType_t dataType;
@@ -716,7 +756,7 @@ int GP2CameraDriver::computeImage(epicsInt16 *value, size_t nelements)
     int colorMode;
     int ndims=0;
     NDDimension_t dimsOut[3];
-    size_t dims[3], dims2[2];
+    size_t dims[3];
     NDArrayInfo_t arrayInfo;
     NDArray *pImage;
     const char* functionName = "computeImage";
@@ -879,100 +919,78 @@ int GP2CameraDriver::computeImage(epicsInt16 *value, size_t nelements)
     if (status) asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
                     "%s:%s: error setting parameters\n",
                     driverName, functionName);
-    if (this->pArrays[1]) this->pArrays[1]->release();
-	dims2[0] = 3;
-	dims2[1] = nelements / 3;
-    this->pArrays[1] = this->pNDArrayPool->alloc(2, dims2, NDUInt16, 0, NULL);
-	memcpy(this->pArrays[1]->pData, value, nelements * sizeof(epicsInt16));
     return(status);
 }
 
 // supplied array of x,y,t
 template <typename epicsType> 
-int GP2CameraDriver::computeArray(epicsInt16* value, size_t nelements, int sizeX, int sizeY)
+int nGEMDriver::computeArray(double* value, size_t nelements, int sizeX, int sizeY)
 {
-    epicsType *pMono=NULL, *pRed=NULL, *pGreen=NULL, *pBlue=NULL;
-    int columnStep=0, rowStep=0, colorMode;
-    int status = asynSuccess;
-    double exposureTime, gain;
-    int i, j, k;
-	
-    status = getDoubleParam (ADGain,        &gain);
-    status = getIntegerParam(NDColorMode,   &colorMode);
-    status = getDoubleParam (ADAcquireTime, &exposureTime);
+	epicsType *pMono = NULL, *pRed = NULL, *pGreen = NULL, *pBlue = NULL;
+	int columnStep = 0, rowStep = 0, colorMode;
+	int status = asynSuccess;
+	double exposureTime;
+	int i, j;
 
-    switch (colorMode) {
-        case NDColorModeMono:
-            pMono = (epicsType *)m_pRaw->pData;
-            break;
-        case NDColorModeRGB1:
-            columnStep = 3;
-            rowStep = 0;
-            pRed   = (epicsType *)m_pRaw->pData;
-            pGreen = (epicsType *)m_pRaw->pData+1;
-            pBlue  = (epicsType *)m_pRaw->pData+2;
-            break;
-        case NDColorModeRGB2:
-            columnStep = 1;
-            rowStep = 2 * sizeX;
-            pRed   = (epicsType *)m_pRaw->pData;
-            pGreen = (epicsType *)m_pRaw->pData + sizeX;
-            pBlue  = (epicsType *)m_pRaw->pData + 2*sizeX;
-            break;
-        case NDColorModeRGB3:
-            columnStep = 1;
-            rowStep = 0;
-            pRed   = (epicsType *)m_pRaw->pData;
-            pGreen = (epicsType *)m_pRaw->pData + sizeX*sizeY;
-            pBlue  = (epicsType *)m_pRaw->pData + 2*sizeX*sizeY;
-            break;
-    }
-    m_pRaw->pAttributeList->add("ColorMode", "Color mode", NDAttrInt32, &colorMode);
-    int xi, yi;
+	status = getIntegerParam(NDColorMode, &colorMode);
+	status = getDoubleParam(ADAcquireTime, &exposureTime);
+
+	switch (colorMode) {
+	case NDColorModeMono:
+		pMono = (epicsType *)m_pRaw->pData;
+		break;
+	case NDColorModeRGB1:
+		columnStep = 3;
+		rowStep = 0;
+		pRed = (epicsType *)m_pRaw->pData;
+		pGreen = (epicsType *)m_pRaw->pData + 1;
+		pBlue = (epicsType *)m_pRaw->pData + 2;
+		break;
+	case NDColorModeRGB2:
+		columnStep = 1;
+		rowStep = 2 * sizeX;
+		pRed = (epicsType *)m_pRaw->pData;
+		pGreen = (epicsType *)m_pRaw->pData + sizeX;
+		pBlue = (epicsType *)m_pRaw->pData + 2 * sizeX;
+		break;
+	case NDColorModeRGB3:
+		columnStep = 1;
+		rowStep = 0;
+		pRed = (epicsType *)m_pRaw->pData;
+		pGreen = (epicsType *)m_pRaw->pData + sizeX * sizeY;
+		pBlue = (epicsType *)m_pRaw->pData + 2 * sizeX*sizeY;
+		break;
+	}
+	m_pRaw->pAttributeList->add("ColorMode", "Color mode", NDAttrInt32, &colorMode);
 	memset(m_pRaw->pData, 0, m_pRaw->dataSize);
-	for(i=0; i< nelements; i += 3)
-	{
-		xi = value[i];
-		yi = value[i+1];
-		if (xi >= 0 && xi < sizeX && yi >= 0 && yi < sizeY)
-		{
-			switch (colorMode) {
-			case NDColorModeMono:
-				++(pMono[yi * sizeX + xi]);
-				break;
-			case NDColorModeRGB1:
-			case NDColorModeRGB2:
-			case NDColorModeRGB3:
-				k = columnStep * (yi * sizeX + xi) + yi * rowStep;
-				++(pRed[k]);
-				++(pGreen[k]);
-				++(pBlue[k]);
-				break;
+	for (i = sizeY - 1; i >= 0; --i) {
+		switch (colorMode) {
+		case NDColorModeMono:
+			for (j = 0; j < sizeX; j++) {
+				*pMono = value[i*sizeX + j];
+				++pMono;
 			}
+			break;
+		case NDColorModeRGB1:
+		case NDColorModeRGB2:
+		case NDColorModeRGB3:
+			for (j = 0; j < sizeX; j++) {
+				*pRed = value[i*sizeX + j];
+				*pGreen = value[i*sizeX + j];
+				*pBlue = value[i*sizeX + j];
+				pRed += columnStep;
+				pGreen += columnStep;
+				pBlue += columnStep;
+			}
+			pRed += rowStep;
+			pGreen += rowStep;
+			pBlue += rowStep;
+			break;
 		}
 	}
-	for(i=0; i< sizeX; ++i)
-	{
-		for(j=0; j< sizeY; ++j)
-		{
-			switch (colorMode) {
-			case NDColorModeMono:
-				pMono[j * sizeX + i] = static_cast<epicsType>(gain * pMono[j * sizeX + i] + 0.5);
-				break;
-			case NDColorModeRGB1:
-			case NDColorModeRGB2:
-			case NDColorModeRGB3:
-				k = columnStep * (j * sizeX + i) + j * rowStep;
-				pRed[k] = static_cast<epicsType>(gain * pRed[k] + 0.5);
-				pGreen[k] = static_cast<epicsType>(gain * pGreen[k] + 0.5);
-				pBlue[k] = static_cast<epicsType>(gain * pBlue[k] + 0.5);
-				break;
-			}
-		}
-	}
-    return(status);
+	return(status);
 }
-#endif
+
 /** Controls the shutter */
 void nGEMDriver::setShutter(int open)
 {
@@ -984,7 +1002,7 @@ void nGEMDriver::setShutter(int open)
         setIntegerParam(ADShutterStatus, open);
     } else {
         /* For no shutter or EPICS shutter call the base class method */
-        nGEMDriver::setShutter(open);
+        ADDriver::setShutter(open);
     }
 }
 

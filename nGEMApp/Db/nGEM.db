@@ -53,12 +53,30 @@ record(waveform, "$(P)$(Q)1DSX")
 #	field(SCAN, "I/O Intr")
 }
 
+record(waveform, "$(P)$(Q)1DSXT")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "1024")
+    field(INP, "@asyn($(PORT),0,1)1DSXT")
+#	field(SCAN, "I/O Intr")
+}
+
 record(waveform, "$(P)$(Q)1DSY")
 {
     field(DTYP, "asynFloat64ArrayIn")
 	field(FTVL, "DOUBLE")
 	field(NELM, "1024")
     field(INP, "@asyn($(PORT),0,1)1DSY")
+#	field(SCAN, "I/O Intr")
+}
+
+record(waveform, "$(P)$(Q)1DSYT")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "1024")
+    field(INP, "@asyn($(PORT),0,1)1DSYT")
 #	field(SCAN, "I/O Intr")
 }
 
@@ -111,6 +129,7 @@ record(mbbo, "$(P)$(Q)DISPLAY:SP")
     field(ONST, "2dlxy")
     field(TWST, "2davg")
     field(THST, "2drng")
+    info(autosaveFields, "VAL")
 }
 
 record(mbbi, "$(P)$(Q)DISPLAY")
@@ -127,3 +146,20 @@ record(mbbi, "$(P)$(Q)DISPLAY")
     field(THST, "2drng")
 	field(SCAN, "I/O Intr")
 }
+
+record(longin, "$(P)$(Q)NTOF")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),0,1)NTOF")
+	field(SCAN, "I/O Intr")
+}
+
+record(waveform, "$(P)$(Q)TOF")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "1024")
+    field(INP, "@asyn($(PORT),0,1)TOF")
+#	field(SCAN, "I/O Intr")
+}
+

@@ -33,6 +33,7 @@ private:
     map_t m_stats;
     int addParam(const char* name, ParamGroup group, asynParamType type);
     void processData();
+	void computeTOF();
 	template <typename T> asynStatus setGEMParam(int param_id, T value);
 	
 	int P_start; // int, FIRST_NGEM_PARAM
@@ -54,6 +55,17 @@ private:
 	// these are returned from addParam()
 	int P_daqStatus; // string
 	int P_runNo; // string
+	int P_inst; // string
+	int P_basepath; // string
+	int P_tofmin; // double
+	int P_tofmax; // double
+	int P_tofwidth; // double
+
+	// calculated
+	int P_ntof; // integer
+	int P_tof; // float64array
+	int P_1dsxt; // float64array, x array for P_1dsx
+	int P_1dsyt; // float64array, x array for P_1dsy
 
 #define NUM_NGEM_PARAMS 100
 #define FIRST_NGEM_PARAM P_start
@@ -62,11 +74,12 @@ private:
 	asynOctetClient* m_det;
 	int m_old_acquiring;
     NDArray* m_pRaw;
+	std::vector<double> m_tof;
 	
 	void pollerThread1();
 	void setADAcquire(int acquire);
-//	int computeImage(epicsInt16 *value, size_t nelements);
-//	template <typename epicsType> int computeArray(epicsInt16* value, size_t nelements, int sizeX, int sizeY);
+	int computeImage(double *value, size_t nelements);
+	template <typename epicsType> int computeArray(double* value, size_t nelements, int sizeX, int sizeY);
     
     asynStatus writeData(const char* output, int timeout);
     asynStatus writeReadData(const char* output, char* input, size_t inputLen);
@@ -91,6 +104,10 @@ private:
 #define P_displayString			"DISPLAY"
 #define P_statsString			"STATS"
 #define P_settingsString		"SETTINGS"
+#define P_1dsxtString			"1DSXT"
+#define P_1dsytString			"1DSYT"
+#define P_ntofString			"NTOF"
+#define P_tofString				"TOF"
 
 struct nGEMParam
 {
