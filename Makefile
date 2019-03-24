@@ -25,6 +25,7 @@ $(foreach dir, $(filter %Top, $(DIRS)), \
 
 # iocBoot depends on all *App dirs
 iocBoot_DEPEND_DIRS += $(filter %App,$(DIRS))
+
 nGEMTestApp_DEPEND_DIRS += nGEMApp
 
 # Add any additional dependency rules here:

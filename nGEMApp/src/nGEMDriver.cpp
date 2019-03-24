@@ -483,11 +483,29 @@ void nGEMDriver::pollerThreadC1(void* arg)
 	}
 }
 
+// -1 = unknow, 0 = stopped, 1 = running
+int nGEMDriver::daqStatus()
+{
+	char daqStatus[20];
+	getStringParam(P_daqStatus, sizeof(daqStatus), daqStatus);
+	if (!strcmp("Running", daqStatus))
+	{
+		return 1;
+	} 
+	else if (!strcmp("Stop", daqStatus))
+	{
+		return 0;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
 void nGEMDriver::pollerThread1()
 {
     static const char* functionName = "nGEMDriverPoller1";
 	int acquiring = 0;
-	char daqStatus[20];
 	while(true)
 	{
 		epicsThreadSleep(2.0);
@@ -496,12 +514,11 @@ void nGEMDriver::pollerThread1()
 		readStats();
 		computeTOF();
 		getIntegerParam(ADAcquire, &acquiring);
-		getStringParam(P_daqStatus, sizeof(daqStatus), daqStatus);
-		if (!strcmp("Running", daqStatus) && acquiring == 0)
+		if (daqStatus() == 1 && acquiring == 0)
 		{
 			setADAcquire(1);
 		}
-		else if (!strcmp("Stop", daqStatus) && acquiring == 1)
+		else if (daqStatus() == 0 && acquiring == 1)
 		{
 			setADAcquire(0);
 		}
@@ -542,17 +559,32 @@ asynStatus nGEMDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 		strftime(tbuffer, sizeof(tbuffer), "%Y%m%d", localtime(&start_time));
 		epicsSnprintf(dirbuffer, sizeof(dirbuffer), "%s%06d_%s", inst, runNo, tbuffer);
 		setStringParam(P_dir, dirbuffer);
-		std::cerr << "START: run " << runNo << " in directory " << dirbuffer << std::endl;
+		readStats();
+		while(daqStatus() != 1)
+		{
+			epicsThreadSleep(1.0);
+			readStats();
+		}
 		setADAcquire(1);
+		std::cerr << "START: run " << runNo << " in directory " << dirbuffer << std::endl;
 	}
 	else if (function == P_stop)
 	{
+		int runNo;
+		getIntegerParam(P_runNo, &runNo); // current number
 		status = writeReadData("stop", input, sizeof(input));
 		if (strncmp(input, "OK:", 3) != 0)
 		{
 			return asynError;
 		}
+		readStats();
+		while(daqStatus() != 0)
+		{
+			epicsThreadSleep(1.0);
+			readStats();
+		}
 		setADAcquire(0);
+		std::cerr << "STOP: run " << runNo << std::endl;
 		copyData();
 	}
 	else if (function == P_updatetof)

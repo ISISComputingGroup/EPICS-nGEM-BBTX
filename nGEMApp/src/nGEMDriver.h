@@ -32,6 +32,7 @@ private:
     map_t m_settings;
     map_t m_stats;
     int addParam(const char* name, ParamGroup group, asynParamType type);
+	int daqStatus();
     void processData();
 	void computeTOF();
 	void copyData();
