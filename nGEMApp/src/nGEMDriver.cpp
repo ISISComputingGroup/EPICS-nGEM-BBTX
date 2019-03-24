@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <math.h>
-#include <process.h>
 #include <exception>
 #include <iostream>
 #include <map>
@@ -11,6 +10,11 @@
 #include <sstream>
 #include <sys/timeb.h>
 #include <numeric>
+
+#ifdef _WIN32
+#include <process.h>
+#endif /* _WIN32 */
+
 #include <boost/algorithm/string.hpp>
 
 #include <epicsTypes.h>
@@ -329,6 +333,7 @@ asynStatus nGEMDriver::readStats()
 	return readPairs("stat", m_stats);
 }
 
+// copyData() doesn't work on linux
 void nGEMDriver::copyData()
 {
 	static const char* copycmd_ = getenv("NGEMCMD");
@@ -354,8 +359,9 @@ void nGEMDriver::copyData()
 	std::string basepath_s = drive + ":\\" + basedir;
 
 	std::cerr << "Running " << copycmd << " for " << dir << " in " << basepath_s << std::endl;
-
+#ifdef _WIN32
     _spawnl(_P_NOWAIT, comspec, comspec, "/c", copycmd.c_str(), basepath_s.c_str(), dir, NULL);
+#endif /* _WIN32 */
 }
 
 asynStatus nGEMDriver::readPairs(const char* command, map_t& map)
