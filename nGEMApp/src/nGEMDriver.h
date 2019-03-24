@@ -34,6 +34,7 @@ private:
     int addParam(const char* name, ParamGroup group, asynParamType type);
     void processData();
 	void computeTOF();
+	void copyData();
 	template <typename T> asynStatus setGEMParam(int param_id, T value);
 	
 	int P_start; // int, FIRST_NGEM_PARAM
@@ -66,6 +67,7 @@ private:
 	int P_tof; // float64array
 	int P_1dsxt; // float64array, x array for P_1dsx
 	int P_1dsyt; // float64array, x array for P_1dsy
+	int P_dir; // string
 
 #define NUM_NGEM_PARAMS 100
 #define FIRST_NGEM_PARAM P_start
@@ -75,6 +77,7 @@ private:
 	int m_old_acquiring;
     NDArray* m_pRaw;
 	std::vector<double> m_tof;
+	std::vector<double> m_tof_old;
 	
 	void pollerThread1();
 	void setADAcquire(int acquire);
@@ -108,6 +111,7 @@ private:
 #define P_1dsytString			"1DSYT"
 #define P_ntofString			"NTOF"
 #define P_tofString				"TOF"
+#define P_dirString				"DIR"
 
 struct nGEMParam
 {

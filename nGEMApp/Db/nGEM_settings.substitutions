@@ -8,13 +8,18 @@ file "string_param.template"
 	{ "\$(P)", "\$(Q)", "\$(PORT)", "normalize2drng", "NORMALIZE2DRNG", "SETTING" }
 }
 
+file "double_param.template"
+{
+    pattern { P, Q, PORT, DESC, NAME, TYPE }
+	{ "\$(P)", "\$(Q)", "\$(PORT)", "tofmin", "TOFMIN", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "tofmax", "TOFMAX", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "tofwidth", "TOFWIDTH", "SETTING" }
+}
+
 file "integer_param.template" 
 {
     pattern { P, Q, PORT, DESC, NAME, TYPE }
 	{ "\$(P)", "\$(Q)", "\$(PORT)", "tcp","TCP", "SETTING" }
-	{ "\$(P)", "\$(Q)", "\$(PORT)", "tofmin", "TOFMIN", "SETTING" }
-    { "\$(P)", "\$(Q)", "\$(PORT)", "tofmax", "TOFMAX", "SETTING" }
-    { "\$(P)", "\$(Q)", "\$(PORT)", "tofwidth", "TOFWIDTH", "SETTING" }
     { "\$(P)", "\$(Q)", "\$(PORT)", "fdtofmin", "FDTOFMIN", "SETTING" }
     { "\$(P)", "\$(Q)", "\$(PORT)", "fdtofmax", "FDTOFMAX", "SETTING" }
     { "\$(P)", "\$(Q)", "\$(PORT)", "f2dabsxmin", "F2DABSXMIN", "SETTING" }

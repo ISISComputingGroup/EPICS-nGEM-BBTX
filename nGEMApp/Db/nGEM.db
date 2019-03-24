@@ -1,6 +1,4 @@
-## pass run number, -ve means increment current
-## run number by abs(value) specified e.g. -1 means 
-## increment current run number by 1
+## increments current run number by 1
 record(longout, "$(P)$(Q)START:SP")
 {
     field(DTYP, "asynInt32")
@@ -32,7 +30,12 @@ record(bo, "$(P)$(Q)UPDATETOF:SP")
 {
     field(DTYP, "asynInt32")
     field(OUT, "@asyn($(PORT),0,1)UPDATETOF")
-    field(FLNK, "$(P)$(Q)1DTOF.PROC")
+}
+
+record(fanout, "$(P)$(Q)1DTOF:UPDATE")
+{
+    field(SELM, "All")
+    field(LNK1, "$(P)$(Q)1DTOF.PROC")
 }
 
 record(waveform, "$(P)$(Q)1DTOF")
@@ -41,7 +44,30 @@ record(waveform, "$(P)$(Q)1DTOF")
 	field(FTVL, "DOUBLE")
 	field(NELM, "50000")
     field(INP, "@asyn($(PORT),0,1)1DTOF")
-	field(PINI, "YES")
+	field(SCAN, "Passive")
+}
+
+record(waveform, "$(P)$(Q)TOF")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "50000")
+    field(INP, "@asyn($(PORT),0,1)TOF")
+	field(SCAN, "I/O Intr")
+}
+
+record(longin, "$(P)$(Q)NTOF")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),0,1)NTOF")
+	field(SCAN, "I/O Intr")
+}
+
+record(fanout, "$(P)$(Q)1DSX:UPDATE")
+{
+    field(SELM, "All")
+    field(LNK1, "$(P)$(Q)1DSXT.PROC")
+    field(LNK2, "$(P)$(Q)1DSX.PROC")
 }
 
 record(waveform, "$(P)$(Q)1DSX")
@@ -50,7 +76,7 @@ record(waveform, "$(P)$(Q)1DSX")
 	field(FTVL, "DOUBLE")
 	field(NELM, "1024")
     field(INP, "@asyn($(PORT),0,1)1DSX")
-#	field(SCAN, "I/O Intr")
+	field(SCAN, "Passive")
 }
 
 record(waveform, "$(P)$(Q)1DSXT")
@@ -59,7 +85,14 @@ record(waveform, "$(P)$(Q)1DSXT")
 	field(FTVL, "DOUBLE")
 	field(NELM, "1024")
     field(INP, "@asyn($(PORT),0,1)1DSXT")
-#	field(SCAN, "I/O Intr")
+	field(SCAN, "Passive")
+}
+
+record(fanout, "$(P)$(Q)1DSY:UPDATE")
+{
+    field(SELM, "All")
+    field(LNK1, "$(P)$(Q)1DSYT.PROC")
+    field(LNK2, "$(P)$(Q)1DSY.PROC")
 }
 
 record(waveform, "$(P)$(Q)1DSY")
@@ -68,7 +101,7 @@ record(waveform, "$(P)$(Q)1DSY")
 	field(FTVL, "DOUBLE")
 	field(NELM, "1024")
     field(INP, "@asyn($(PORT),0,1)1DSY")
-#	field(SCAN, "I/O Intr")
+	field(SCAN, "Passive")
 }
 
 record(waveform, "$(P)$(Q)1DSYT")
@@ -77,7 +110,7 @@ record(waveform, "$(P)$(Q)1DSYT")
 	field(FTVL, "DOUBLE")
 	field(NELM, "1024")
     field(INP, "@asyn($(PORT),0,1)1DSYT")
-#	field(SCAN, "I/O Intr")
+	field(SCAN, "Passive")
 }
 
 record(waveform, "$(P)$(Q)2DFXY")
@@ -86,7 +119,7 @@ record(waveform, "$(P)$(Q)2DFXY")
 	field(FTVL, "DOUBLE")
 	field(NELM, "16384")
     field(INP, "@asyn($(PORT),0,1)2DFXY")
-#	field(SCAN, "I/O Intr")
+	field(SCAN, "Passive")
 }
 
 record(waveform, "$(P)$(Q)2DLXY")
@@ -95,7 +128,7 @@ record(waveform, "$(P)$(Q)2DLXY")
 	field(FTVL, "DOUBLE")
 	field(NELM, "16384")
     field(INP, "@asyn($(PORT),0,1)2DLXY")
-#	field(SCAN, "I/O Intr")
+	field(SCAN, "Passive")
 }
 
 record(waveform, "$(P)$(Q)2DAVG")
@@ -104,7 +137,7 @@ record(waveform, "$(P)$(Q)2DAVG")
 	field(FTVL, "DOUBLE")
 	field(NELM, "16384")
     field(INP, "@asyn($(PORT),0,1)2DAVG")
-#	field(SCAN, "I/O Intr")
+	field(SCAN, "Passive")
 }
 
 record(waveform, "$(P)$(Q)2DRNG")
@@ -113,7 +146,7 @@ record(waveform, "$(P)$(Q)2DRNG")
 	field(FTVL, "DOUBLE")
 	field(NELM, "16384")
     field(INP, "@asyn($(PORT),0,1)2DRNG")
-#	field(SCAN, "I/O Intr")
+	field(SCAN, "Passive")
 }
 
 ## mbbi names should match DiplayMode enum in asyn driver
@@ -129,6 +162,7 @@ record(mbbo, "$(P)$(Q)DISPLAY:SP")
     field(ONST, "2dlxy")
     field(TWST, "2davg")
     field(THST, "2drng")
+	field(PINI, "YES")
     info(autosaveFields, "VAL")
 }
 
@@ -147,19 +181,10 @@ record(mbbi, "$(P)$(Q)DISPLAY")
 	field(SCAN, "I/O Intr")
 }
 
-record(longin, "$(P)$(Q)NTOF")
+record(stringin, "$(P)$(Q)DIR")
 {
-    field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),0,1)NTOF")
+    field(DTYP, "asynOctetRead")
+    field(INP, "@asyn($(PORT),0,1)DIR")
 	field(SCAN, "I/O Intr")
+	info(archive, "VAL")
 }
-
-record(waveform, "$(P)$(Q)TOF")
-{
-    field(DTYP, "asynFloat64ArrayIn")
-	field(FTVL, "DOUBLE")
-	field(NELM, "1024")
-    field(INP, "@asyn($(PORT),0,1)TOF")
-#	field(SCAN, "I/O Intr")
-}
-
