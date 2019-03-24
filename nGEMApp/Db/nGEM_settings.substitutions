@@ -1,0 +1,37 @@
+file "string_param.template"
+{
+    pattern { P, Q, PORT, DESC, NAME, TYPE }
+	{ "\$(P)", "\$(Q)", "\$(PORT)", "inst", "INST", "SETTING" }
+	{ "\$(P)", "\$(Q)", "\$(PORT)", "basepath", "BASEPATH", "SETTING" }
+	{ "\$(P)", "\$(Q)", "\$(PORT)", "logging", "LOGGING", "SETTING" }
+	{ "\$(P)", "\$(Q)", "\$(PORT)", "host", "HOST", "SETTING" }
+	{ "\$(P)", "\$(Q)", "\$(PORT)", "normalize2drng", "NORMALIZE2DRNG", "SETTING" }
+}
+
+file "double_param.template"
+{
+    pattern { P, Q, PORT, DESC, NAME, TYPE }
+	{ "\$(P)", "\$(Q)", "\$(PORT)", "tofmin", "TOFMIN", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "tofmax", "TOFMAX", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "tofwidth", "TOFWIDTH", "SETTING" }
+}
+
+file "integer_param.template" 
+{
+    pattern { P, Q, PORT, DESC, NAME, TYPE }
+	{ "\$(P)", "\$(Q)", "\$(PORT)", "tcp","TCP", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "fdtofmin", "FDTOFMIN", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "fdtofmax", "FDTOFMAX", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "f2dabsxmin", "F2DABSXMIN", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "f2dabsymin", "F2DABSYMIN", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "f2dabsxmax", "F2DABSXMAX", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "f2dabsymax", "F2DABSYMAX", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "fdxmin", "FDXMIN", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "fdxmax", "FDXMAX", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "fdymin", "FDYMIN", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "fdymax", "FDYMAX", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "fsxmin", "FSXMIN", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "fsxmax", "FSXMAX", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "fsymin", "FSYMIN", "SETTING" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "fsymax", "FSYMAX", "SETTING" }
+}

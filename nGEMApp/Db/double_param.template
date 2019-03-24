@@ -1,0 +1,14 @@
+record(ai, "$(P)$(Q)$(NAME)")
+{
+    field(DESC,"$(DESC)")
+    field(DTYP, "asynFloat64")
+    field(INP, "@asyn($(PORT),0,1)$(NAME)_$(TYPE)")
+	field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(Q)$(NAME):SP")
+{
+    field(DESC,"$(DESC)")
+    field(DTYP, "asynFloat64")
+    field(OUT, "@asyn($(PORT),0,1)$(NAME)_$(TYPE)")
+}

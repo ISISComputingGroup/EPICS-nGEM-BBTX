@@ -12,6 +12,8 @@ USR_CXXFLAGS_WIN32 += -DNOMINMAX
 
 LIBRARY_IOC += nGEM
 
+nGEM_SRCS += nGEMDriver.cpp
+
 nGEM_LIBS += webget htmltidy asyn utilities zlib pcrecpp pcre pugixml
 nGEM_LIBS += cas gdd
 nGEM_LIBS += $(EPICS_BASE_IOC_LIBS)

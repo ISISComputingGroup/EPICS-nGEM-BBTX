@@ -1,0 +1,38 @@
+file "string_param.template"
+{
+    pattern { P, Q, PORT, DESC, NAME, TYPE }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Daq Status", "DAQ_STATUS", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Load Status", "LOAD_STATUS", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Logging Prefix", "LOGGING_PREFIX", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Loading file", "LOADING_FILE", "STAT" }
+}
+
+file "integer_param.template"
+{
+    pattern { P, Q, PORT, DESC, NAME, TYPE }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Run No", "RUN_NO", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Loading Run No", "LOADING_RUN_NO", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Loading CPU", "LOADING_CPU", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Loading Module", "LOADING_MODULE", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Loading Detail", "LOADING_DETAIL", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Total Events", "TOTAL_EVENTS", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "T0 Events", "T0_EVENTS", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "T0 Frame Loss Accumulated", "T0_FRAME_LOSS_ACCUMULATED", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "T0 Frame Loss Maximum", "T0_FRAME_LOSS_MAXIMUM", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "T0 Frame Loss Detected", "T0_FRAME_LOSS_DETECTED", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "T0 Event Loss Accumulated", "T0_EVENT_LOSS_ACCUMULATED", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "T0 Event Loss Maximum", "T0_EVENT_LOSS_MAXIMUM", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "T0 Event Loss Detected", "T0_EVENT_LOSS_DETECTED", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "T0 FIFO Event Detected", "T0_FIFO_EVENT_DETECTED", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "T0 FIFO Event Maximum", "T0_FIFO_EVENT_MAXIMUM", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "T0 Total Loss Count", "T0_TOTAL_LOSS_COUNT", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Time Events", "TIME_EVENTS", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Pulse Events", "PULSE_EVENTS", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Coincidence Events", "COINCIDENCE_EVENTS", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Unknown Events", "UNKNOWN_EVENTS", "STAT"  }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "TOF Data Out Of Rnage", "TOF_DATA_OUT_OF_RNAGE", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Filter TOF", "FILTER_TOF", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Filter ABS", "FILTER_ABS", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Filter DX/DY", "FILTER_DX_DY", "STAT" }
+    { "\$(P)", "\$(Q)", "\$(PORT)", "Filter SX/SY", "FILTER_SX_SY", "STAT" }
+}

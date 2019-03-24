@@ -1,0 +1,190 @@
+## increments current run number by 1
+record(longout, "$(P)$(Q)START:SP")
+{
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),0,1)START")
+}
+
+record(bo, "$(P)$(Q)STOP:SP")
+{
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),0,1)STOP")
+}
+
+record(stringout, "$(P)$(Q)COMMAND:SP")
+{
+    field(DTYP, "asynOctetWrite")
+    field(OUT, "@asyn($(PORT),0,1)COMMAND")
+}
+
+record(waveform, "$(P)$(Q)COMMAND:REPLY")
+{
+    field(DTYP, "asynOctetRead")
+	field(FTVL, "CHAR")
+	field(NELM, "1024")
+    field(INP, "@asyn($(PORT),0,1)COMMAND_REPLY")
+	field(SCAN, "I/O Intr")
+}
+
+record(bo, "$(P)$(Q)UPDATETOF:SP")
+{
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),0,1)UPDATETOF")
+}
+
+record(fanout, "$(P)$(Q)1DTOF:UPDATE")
+{
+    field(SELM, "All")
+    field(LNK1, "$(P)$(Q)1DTOF.PROC")
+}
+
+record(waveform, "$(P)$(Q)1DTOF")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "50000")
+    field(INP, "@asyn($(PORT),0,1)1DTOF")
+	field(SCAN, "Passive")
+}
+
+record(waveform, "$(P)$(Q)TOF")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "50000")
+    field(INP, "@asyn($(PORT),0,1)TOF")
+	field(SCAN, "I/O Intr")
+}
+
+record(longin, "$(P)$(Q)NTOF")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),0,1)NTOF")
+	field(SCAN, "I/O Intr")
+}
+
+record(fanout, "$(P)$(Q)1DSX:UPDATE")
+{
+    field(SELM, "All")
+    field(LNK1, "$(P)$(Q)1DSXT.PROC")
+    field(LNK2, "$(P)$(Q)1DSX.PROC")
+}
+
+record(waveform, "$(P)$(Q)1DSX")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "1024")
+    field(INP, "@asyn($(PORT),0,1)1DSX")
+	field(SCAN, "Passive")
+}
+
+record(waveform, "$(P)$(Q)1DSXT")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "1024")
+    field(INP, "@asyn($(PORT),0,1)1DSXT")
+	field(SCAN, "Passive")
+}
+
+record(fanout, "$(P)$(Q)1DSY:UPDATE")
+{
+    field(SELM, "All")
+    field(LNK1, "$(P)$(Q)1DSYT.PROC")
+    field(LNK2, "$(P)$(Q)1DSY.PROC")
+}
+
+record(waveform, "$(P)$(Q)1DSY")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "1024")
+    field(INP, "@asyn($(PORT),0,1)1DSY")
+	field(SCAN, "Passive")
+}
+
+record(waveform, "$(P)$(Q)1DSYT")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "1024")
+    field(INP, "@asyn($(PORT),0,1)1DSYT")
+	field(SCAN, "Passive")
+}
+
+record(waveform, "$(P)$(Q)2DFXY")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "16384")
+    field(INP, "@asyn($(PORT),0,1)2DFXY")
+	field(SCAN, "Passive")
+}
+
+record(waveform, "$(P)$(Q)2DLXY")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "16384")
+    field(INP, "@asyn($(PORT),0,1)2DLXY")
+	field(SCAN, "Passive")
+}
+
+record(waveform, "$(P)$(Q)2DAVG")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "16384")
+    field(INP, "@asyn($(PORT),0,1)2DAVG")
+	field(SCAN, "Passive")
+}
+
+record(waveform, "$(P)$(Q)2DRNG")
+{
+    field(DTYP, "asynFloat64ArrayIn")
+	field(FTVL, "DOUBLE")
+	field(NELM, "16384")
+    field(INP, "@asyn($(PORT),0,1)2DRNG")
+	field(SCAN, "Passive")
+}
+
+## mbbi names should match DiplayMode enum in asyn driver
+record(mbbo, "$(P)$(Q)DISPLAY:SP")
+{
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),0,1)DISPLAY")
+    field(ZRVL, 0)
+    field(ONVL, 1)
+    field(TWVL, 2)
+    field(THVL, 3)
+    field(ZRST, "2dfxy")
+    field(ONST, "2dlxy")
+    field(TWST, "2davg")
+    field(THST, "2drng")
+	field(PINI, "YES")
+    info(autosaveFields, "VAL")
+}
+
+record(mbbi, "$(P)$(Q)DISPLAY")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),0,1)DISPLAY")
+    field(ZRVL, 0)
+    field(ONVL, 1)
+    field(TWVL, 2)
+    field(THVL, 3)
+    field(ZRST, "2dfxy")
+    field(ONST, "2dlxy")
+    field(TWST, "2davg")
+    field(THST, "2drng")
+	field(SCAN, "I/O Intr")
+}
+
+record(stringin, "$(P)$(Q)DIR")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP, "@asyn($(PORT),0,1)DIR")
+	field(SCAN, "I/O Intr")
+	info(archive, "VAL")
+}

@@ -10,7 +10,7 @@ include $(TOP)/configure/CONFIG
 #----------------------------------------------------
 # Create and install (or just install) into <top>/db
 # databases, templates, substitutions like this
-#DB += xxx.db
+DB += nGEM.db nGEM_settings.db nGEM_stats.db nGEMAD.template
 
 #----------------------------------------------------
 # If <anyname>.db template is not named <anyname>*.template add
