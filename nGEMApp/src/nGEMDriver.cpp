@@ -155,6 +155,7 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
 	createParam(P_tofString, asynParamFloat64Array, &P_tof);
 	createParam(P_ntofString, asynParamInt32, &P_ntof);
 	createParam(P_dirString, asynParamOctet, &P_dir);
+	createParam(P_dataModeString, asynParamInt32, &P_dataMode);
 	
 	// settings
     P_inst = addParam("inst", GroupSettings, asynParamOctet);
@@ -238,6 +239,9 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
 
 	setIntegerParam(ADAcquire, 0);
     setStringParam(P_dir, "");
+    setStringParam(P_inst, "");
+    setStringParam(P_basepath, "");
+	setIntegerParam(P_dataMode, 0);
 
     if (status) {
         printf("%s: unable to set nGEM parameters\n", functionName);
@@ -340,11 +344,11 @@ void nGEMDriver::copyData()
 	static const char* comspec = getenv("COMSPEC");
 	char dir[64], inst[10], basepath[512];
 	std::string copycmd;
-	if (copycmd_ == NULL) {
+	if (copycmd_ == NULL) 
+	{
 		return;
 	}
-	getStringParam(P_dir, sizeof(dir), dir);
-	if (strlen(dir) == 0)
+	if ( (getStringParam(P_dir, sizeof(dir), dir) != asynSuccess) || (strlen(dir) == 0) )
 	{
 		return;
 	}
@@ -357,7 +361,10 @@ void nGEMDriver::copyData()
 	std::replace(basedir.begin(), basedir.end(), '/', '\\');
 	std::replace(copycmd.begin(), copycmd.end(), '/', '\\');
 	std::string basepath_s = drive + ":\\" + basedir;
-
+	if (basedir.size() == 0)
+	{
+		return;
+	}
 	std::cerr << "Running " << copycmd << " for " << dir << " in " << basepath_s << std::endl;
 #ifdef _WIN32
     _spawnl(_P_NOWAIT, comspec, comspec, "/c", copycmd.c_str(), basepath_s.c_str(), dir, NULL);
@@ -392,6 +399,28 @@ asynStatus nGEMDriver::readPairs(const char* command, map_t& map)
 	  }
   }
   return asynSuccess;
+}
+
+void nGEMDriver::applyDataMode(double* data, size_t nelements)
+{
+	int dataMode = 0;
+	getIntegerParam(P_dataMode, &dataMode);
+	for(int i=0; i<nelements; ++i)
+	{
+	    switch(dataMode)
+	    {
+		    case 0:
+			    break;
+			case 1:
+			    data[i] = sqrt(data[i]);
+				break;
+			case 2:
+				data[i] = log(1 + data[i]);
+				break;
+			default:
+			    break;
+		}
+	}
 }
 
 // format is int32 (number of following bytes) then double precision values
@@ -465,6 +494,7 @@ asynStatus nGEMDriver::readFloat64Array(asynUser *pasynUser, epicsFloat64 *value
 	if ( convert && (status == asynSuccess) )
 	{
 	    status = convertData(buffer, value, nElements, *nIn);
+		applyDataMode(value, *nIn);
 	}
     if (status == asynSuccess)
 	{
@@ -747,6 +777,7 @@ void nGEMDriver::processData()
 			break;
 		}
 		convertData(buffer, value, sizeof(value) / sizeof(double), nelements);
+		applyDataMode(value, nelements);
 		getDoubleParam(ADAcquirePeriod, &acquirePeriod);
 //		if (m_old_acquiring == 0)
 //		{

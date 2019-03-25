@@ -36,6 +36,7 @@ private:
     void processData();
 	void computeTOF();
 	void copyData();
+	void applyDataMode(double* data, size_t nelements);
 	template <typename T> asynStatus setGEMParam(int param_id, T value);
 	
 	int P_start; // int, FIRST_NGEM_PARAM
@@ -53,6 +54,7 @@ private:
 	int P_display; // int
 	int P_stats; // int
 	int P_settings; // int
+	int P_dataMode; // int
 	
 	// these are returned from addParam()
 	int P_daqStatus; // string
@@ -113,6 +115,7 @@ private:
 #define P_ntofString			"NTOF"
 #define P_tofString				"TOF"
 #define P_dirString				"DIR"
+#define P_dataModeString		"DATAMODE"
 
 struct nGEMParam
 {

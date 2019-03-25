@@ -181,6 +181,33 @@ record(mbbi, "$(P)$(Q)DISPLAY")
 	field(SCAN, "I/O Intr")
 }
 
+record(mbbo, "$(P)$(Q)DATAMODE:SP")
+{
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),0,1)DATAMODE")
+    field(ZRVL, 0)
+    field(ONVL, 1)
+    field(TWVL, 2)
+    field(ZRST, "Linear")
+    field(ONST, "Sqrt")
+    field(TWST, "Log")
+	field(PINI, "YES")
+    info(autosaveFields, "VAL")
+}
+
+record(mbbi, "$(P)$(Q)DATAMODE")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),0,1)DATAMODE")
+    field(ZRVL, 0)
+    field(ONVL, 1)
+    field(TWVL, 2)
+    field(ZRST, "Linear")
+    field(ONST, "Sqrt")
+    field(TWST, "Log")
+	field(SCAN, "I/O Intr")
+}
+
 record(stringin, "$(P)$(Q)DIR")
 {
     field(DTYP, "asynOctetRead")
