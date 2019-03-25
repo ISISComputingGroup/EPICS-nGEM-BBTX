@@ -55,6 +55,8 @@ private:
 	int P_stats; // int
 	int P_settings; // int
 	int P_dataMode; // int
+    int P_instRunNumber; // string
+    int P_instName; // string
 	
 	// these are returned from addParam()
 	int P_daqStatus; // string
@@ -116,6 +118,8 @@ private:
 #define P_tofString				"TOF"
 #define P_dirString				"DIR"
 #define P_dataModeString		"DATAMODE"
+#define P_instRunNumberString	"INSTRUNNUMBER"
+#define P_instNameString		"INSTNAME"
 
 struct nGEMParam
 {

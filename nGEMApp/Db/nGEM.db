@@ -215,3 +215,19 @@ record(stringin, "$(P)$(Q)DIR")
 	field(SCAN, "I/O Intr")
 	info(archive, "VAL")
 }
+
+record(stringout, "$(P)$(Q)_INSTRUN")
+{
+    field(DTYP, "asynOctetWrite")
+    field(DOL, "$(P)DAE:RUNNUMBER CP")
+	field(OMSL, "closed_loop")
+	field(OUT, "@asyn($(PORT),0,1)INSTRUNNUMBER")
+}
+
+record(stringout, "$(P)$(Q)_INSTNAME")
+{
+    field(DTYP, "asynOctetWrite")
+    field(DOL, "$(P)DAE:INSTNAME CP")
+	field(OMSL, "closed_loop")
+	field(OUT, "@asyn($(PORT),0,1)INSTNAME")
+}

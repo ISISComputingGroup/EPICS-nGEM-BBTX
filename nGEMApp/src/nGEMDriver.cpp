@@ -156,6 +156,8 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
 	createParam(P_ntofString, asynParamInt32, &P_ntof);
 	createParam(P_dirString, asynParamOctet, &P_dir);
 	createParam(P_dataModeString, asynParamInt32, &P_dataMode);
+	createParam(P_instRunNumberString, asynParamOctet, &P_instRunNumber);
+	createParam(P_instNameString, asynParamOctet, &P_instName);
 	
 	// settings
     P_inst = addParam("inst", GroupSettings, asynParamOctet);
@@ -242,6 +244,8 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
     setStringParam(P_inst, "");
     setStringParam(P_basepath, "");
 	setIntegerParam(P_dataMode, 0);
+	setStringParam(P_instRunNumber, "00000000");
+	setStringParam(P_instName, "UNKNOWN");	
 
     if (status) {
         printf("%s: unable to set nGEM parameters\n", functionName);
@@ -342,7 +346,7 @@ void nGEMDriver::copyData()
 {
 	static const char* copycmd_ = getenv("NGEMCMD");
 	static const char* comspec = getenv("COMSPEC");
-	char dir[64], inst[10], basepath[512];
+	char dir[64], inst[10], basepath[512], instrun[20], instname[20];
 	std::string copycmd;
 	if (copycmd_ == NULL) 
 	{
@@ -355,6 +359,8 @@ void nGEMDriver::copyData()
 	copycmd = copycmd_;
 	getStringParam(P_inst, sizeof(inst), inst);
 	getStringParam(P_basepath, sizeof(basepath), basepath);
+	getStringParam(P_instRunNumber, sizeof(instrun), instrun);
+	getStringParam(P_instName, sizeof(instname), instname);
     pcrecpp::RE re("/cygdrive/([a-zA-Z])/(.*)");
     std::string drive, basedir;
     re.FullMatch(basepath, &drive, &basedir);
@@ -367,7 +373,7 @@ void nGEMDriver::copyData()
 	}
 	std::cerr << "Running " << copycmd << " for " << dir << " in " << basepath_s << std::endl;
 #ifdef _WIN32
-    _spawnl(_P_NOWAIT, comspec, comspec, "/c", copycmd.c_str(), basepath_s.c_str(), dir, NULL);
+    _spawnl(_P_NOWAIT, comspec, comspec, "/c", copycmd.c_str(), basepath_s.c_str(), dir, instname, instrun, NULL);
 #endif /* _WIN32 */
 }
 
