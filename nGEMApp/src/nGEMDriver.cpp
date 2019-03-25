@@ -25,6 +25,7 @@
 #include <epicsMutex.h>
 #include <epicsEvent.h>
 #include <iocsh.h>
+#include <initHooks.h>
 
 #include <macLib.h>
 #include <epicsGuard.h>
@@ -42,6 +43,20 @@
 #include "nGEMDriver.h"
 
 #include <epicsExport.h>
+
+static volatile bool iocRunning = false;
+
+static void myHookFunction(initHookState state)
+{
+  switch(state) {
+    case initHookAfterIocRunning:
+      iocRunning = true;
+      break;
+
+    default:
+      break;
+  }
+}
 
 int nGEMDriver::addParam(const char* name, ParamGroup group, asynParamType type)
 {
@@ -133,6 +148,7 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
 //      "%s: cannot connect to nGEM detector\n",
 //      functionName);
 //    }	
+
 	m_det = new asynOctetClient(ipPortName, 0, NULL, 0.01);
 	
 	createParam(P_startString, asynParamInt32, &P_start); // FIRST_NGEM_PARAM
@@ -282,7 +298,7 @@ void nGEMDriver::computeTOF()
 		{
 			m_tof[i] = tofmin + i * tofwidth;
 		}
-		if (m_tof != m_tof_old)
+		if (iocRunning && m_tof != m_tof_old)
 		{
 			m_tof_old = m_tof;
 		    doCallbacksFloat64Array(&(m_tof[0]), m_tof.size(), P_tof, 0);
@@ -401,7 +417,7 @@ asynStatus nGEMDriver::readPairs(const char* command, map_t& map)
 	  }
 	  else
 	  {
-		  std::cerr << "Unknown setting/stat: \"" << name << "\"" << std::endl; 
+		  std::cerr << "Unknown setting/stat: \"" << name << "\" from command \"" << command << "\"" << std::endl; 
 	  }
   }
   return asynSuccess;
@@ -579,6 +595,7 @@ asynStatus nGEMDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 	{
 		int runNo;
 		char inst[10];
+		status = writeReadData("updatetof", input, sizeof(input));
 		getIntegerParam(P_runNo, &runNo); // current number
 		getStringParam(P_inst, sizeof(inst), inst);
 		runNo += 1;
@@ -1199,6 +1216,7 @@ static void initCallFunc(const iocshArgBuf *args)
 static void nGEMRegister(void)
 {
     iocshRegister(&initFuncDef, initCallFunc);
+    initHookRegister(myHookFunction);
 }
 
 epicsExportRegistrar(nGEMRegister);
