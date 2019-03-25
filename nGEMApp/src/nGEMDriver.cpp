@@ -596,6 +596,7 @@ asynStatus nGEMDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 		int runNo;
 		char inst[10];
 		status = writeReadData("updatetof", input, sizeof(input));
+		epicsThreadSleep(0.1);
 		getIntegerParam(P_runNo, &runNo); // current number
 		getStringParam(P_inst, sizeof(inst), inst);
 		runNo += 1;
