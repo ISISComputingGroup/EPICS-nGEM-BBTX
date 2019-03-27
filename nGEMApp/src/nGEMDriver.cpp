@@ -126,18 +126,18 @@ void nGEMDriver::setADAcquire(int acquire)
 /// \param[in] dcomint DCOM interface pointer created by lvDCOMConfigure()
 /// \param[in] portName @copydoc initArg0
 nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
-   : ADDriver(portName, 
-                    1, /* maxAddr */ 
-					NUM_NGEM_PARAMS,
-					0, // maxBuffers
-					0, // maxMemory
-                    asynInt32Mask | asynInt16ArrayMask | asynInt32ArrayMask | asynFloat64Mask | asynFloat64ArrayMask | asynOctetMask | asynDrvUserMask, /* Interface mask */
-                    asynInt32Mask | asynInt16ArrayMask| asynInt32ArrayMask | asynFloat64Mask | asynFloat64ArrayMask | asynOctetMask,  /* Interrupt mask */
-                    ASYN_CANBLOCK, /* asynFlags.  This driver can block but it is not multi-device */
-                    1, /* Autoconnect */
-                    0, /* Default priority */
-                    0),	/* Default stack size*/
-					m_pRaw(NULL), m_old_acquiring(0)
+	: ADDriver(portName,
+		1, /* maxAddr */
+		NUM_NGEM_PARAMS,
+		0, // maxBuffers
+		0, // maxMemory
+		asynInt32Mask | asynInt16ArrayMask | asynInt32ArrayMask | asynFloat64Mask | asynFloat64ArrayMask | asynOctetMask | asynDrvUserMask, /* Interface mask */
+		asynInt32Mask | asynInt16ArrayMask | asynInt32ArrayMask | asynFloat64Mask | asynFloat64ArrayMask | asynOctetMask,  /* Interrupt mask */
+		ASYN_CANBLOCK, /* asynFlags.  This driver can block but it is not multi-device */
+		1, /* Autoconnect */
+		0, /* Default priority */
+		0),	/* Default stack size*/
+	m_pRaw(NULL), m_old_acquiring(0), m_instRunNumber("00000000")
 					
 {					
 	int status;
@@ -362,7 +362,7 @@ void nGEMDriver::copyData()
 {
 	static const char* copycmd_ = getenv("NGEMCMD");
 	static const char* comspec = getenv("COMSPEC");
-	char dir[64], inst[10], basepath[512], instrun[20], instname[20];
+	char dir[64], inst[10], basepath[512], instname[20];
 	std::string copycmd;
 	if (copycmd_ == NULL) 
 	{
@@ -375,7 +375,6 @@ void nGEMDriver::copyData()
 	copycmd = copycmd_;
 	getStringParam(P_inst, sizeof(inst), inst);
 	getStringParam(P_basepath, sizeof(basepath), basepath);
-	getStringParam(P_instRunNumber, sizeof(instrun), instrun);
 	getStringParam(P_instName, sizeof(instname), instname);
     pcrecpp::RE re("/cygdrive/([a-zA-Z])/(.*)");
     std::string drive, basedir;
@@ -389,7 +388,7 @@ void nGEMDriver::copyData()
 	}
 	std::cerr << "Running " << copycmd << " for " << dir << " in " << basepath_s << std::endl;
 #ifdef _WIN32
-    _spawnl(_P_NOWAIT, comspec, comspec, "/c", copycmd.c_str(), basepath_s.c_str(), dir, instname, instrun, NULL);
+    _spawnl(_P_NOWAIT, comspec, comspec, "/c", copycmd.c_str(), basepath_s.c_str(), dir, instname, m_instRunNumber, NULL);
 #endif /* _WIN32 */
 }
 
@@ -568,6 +567,7 @@ void nGEMDriver::pollerThread1()
 		getIntegerParam(ADAcquire, &acquiring);
 		if (daqStatus() == 1 && acquiring == 0)
 		{
+			getStringParam(P_instRunNumber, sizeof(m_instRunNumber), m_instRunNumber);
 			setADAcquire(1);
 		}
 		else if (daqStatus() == 0 && acquiring == 1)
@@ -595,9 +595,10 @@ asynStatus nGEMDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 	{
 		int runNo;
 		char inst[10];
+		getStringParam(P_instRunNumber, sizeof(m_instRunNumber), m_instRunNumber); // record at start to avoid race condition on end
 		status = writeReadData("updatetof", input, sizeof(input));
 		epicsThreadSleep(0.1);
-		getIntegerParam(P_runNo, &runNo); // current number
+		getIntegerParam(P_runNo, &runNo); // current GEM number
 		getStringParam(P_inst, sizeof(inst), inst);
 		runNo += 1;
 		sprintf(output, "start %d", runNo);
