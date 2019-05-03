@@ -83,6 +83,7 @@ private:
     NDArray* m_pRaw;
 	std::vector<double> m_tof;
 	std::vector<double> m_tof_old;
+	char m_instRunNumber[32]; // copy of P_instRunNumber saved at start
 	
 	void pollerThread1();
 	void setADAcquire(int acquire);
