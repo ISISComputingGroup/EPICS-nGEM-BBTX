@@ -137,11 +137,12 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
 		1, /* Autoconnect */
 		0, /* Default priority */
 		0),	/* Default stack size*/
-	m_pRaw(NULL), m_old_acquiring(0), m_instRunNumber("00000000")
+	m_pRaw(NULL), m_old_acquiring(0)
 					
 {					
 	int status;
     const char *functionName = "nGEMDriver";
+	strcpy(m_instRunNumber, "00000000");
 //    status = pasynOctetSyncIO->connect(ipPortName, 0, &m_detPort, NULL);
 //    if (status) {
 //      asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
