@@ -26,6 +26,11 @@ nGEM_SYS_LIBS_WIN32 += psapi
 # see isisdaeInclude.dbd
 DBD += nGEM.dbd
 
+PROD_IOC += nGEMFileReader
+nGEMFileReader_SRCS += nGEMFileReader.cpp
+nGEMFileReader_LIBS += NeXus hdf5
+nGEMFileReader_LIBS += $(EPICS_BASE_IOC_LIBS)
+
 include $(ADCORE)/ADApp/commonLibraryMakefile
 
 #===========================
