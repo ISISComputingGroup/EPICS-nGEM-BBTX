@@ -27,10 +27,12 @@ nGEM_SYS_LIBS_WIN32 += psapi
 DBD += nGEM.dbd
 
 ifeq ($(findstring static,$(EPICS_HOST_ARCH)),)
+ifeq ($(findstring linux,$(EPICS_HOST_ARCH)),)
 PROD_IOC += nGEMFileReader
 nGEMFileReader_SRCS += nGEMFileReader.cpp
 nGEMFileReader_LIBS += NeXus hdf5
 nGEMFileReader_LIBS += $(EPICS_BASE_IOC_LIBS)
+endif
 endif
 
 include $(ADCORE)/ADApp/commonLibraryMakefile
