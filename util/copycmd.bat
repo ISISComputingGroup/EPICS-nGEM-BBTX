@@ -1,4 +1,5 @@
 REM @echo off
+REM reset PATH to default as EPICS path is long and can cause issues
 set "PATH=C:\windows\system32;C:\windows;C:\windows\System32\Wbem"
 set "BASE=%1"
 set "DIR=%2"
@@ -7,6 +8,7 @@ set "INSTNAME=%3"
 set "INSTRUN=%4"
 
 set "INSTDIR=%INSTNAME%%INSTRUN%"
+REM example archive directory, change locally
 set "ARCHIVE=C:\test"
 
 REM wait 30 seconds

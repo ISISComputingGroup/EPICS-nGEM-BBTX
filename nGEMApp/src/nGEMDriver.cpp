@@ -1225,18 +1225,3 @@ static void nGEMRegister(void)
 epicsExportRegistrar(nGEMRegister);
 
 }
-
-
-#if 0
-asynStatus nGEMDriver::checkForOK(const char* input)
-{
-    if (strncmp(input, "OK:", 3) != 0)
-	{
-		return asynFailure;		
-	}
-	else
-	{
-		return asynSuccess;
-	}	
-}
-#endif
