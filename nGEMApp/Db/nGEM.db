@@ -56,11 +56,13 @@ record(waveform, "$(P)$(Q)TOF")
 	field(SCAN, "I/O Intr")
 }
 
+# we use NTOF for overall status
 record(longin, "$(P)$(Q)NTOF")
 {
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),0,1)NTOF")
 	field(SCAN, "I/O Intr")
+    info(alarm, "$(IOCNAME=NGEM_01)")
 }
 
 record(fanout, "$(P)$(Q)1DSX:UPDATE")
