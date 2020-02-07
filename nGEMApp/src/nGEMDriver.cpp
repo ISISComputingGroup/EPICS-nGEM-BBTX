@@ -150,7 +150,7 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
 //      functionName);
 //    }	
 
-	m_det = new asynOctetClient(ipPortName, 0, NULL, 0.01);
+	m_det = new asynOctetClient(ipPortName, 0, (const char*)0, 0.01);
 	
 	createParam(P_startString, asynParamInt32, &P_start); // FIRST_NGEM_PARAM
 	createParam(P_stopString, asynParamInt32, &P_stop);
