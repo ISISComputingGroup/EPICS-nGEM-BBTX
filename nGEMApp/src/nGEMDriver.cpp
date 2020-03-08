@@ -287,6 +287,13 @@ void nGEMDriver::computeTOF()
 {
     double tofmin, tofmax, tofwidth;
 	int ntof;
+    asynStatus status;
+    // ntof is used to monitor alarm status of comms. 
+    if (getParamStatus(P_tofmin, &status) == asynSuccess && status != asynSuccess)
+    {
+        setParamStatus(P_ntof, status);
+        return;        
+    }
 	getDoubleParam(P_tofmin, &tofmin);
 	getDoubleParam(P_tofmax, &tofmax);
 	getDoubleParam(P_tofwidth, &tofwidth);
@@ -319,6 +326,7 @@ asynStatus nGEMDriver::writeReadData(const char* output, char* input, size_t inp
   std::string ngem_term("ngem>");
   int eomReason;
   size_t nwrite = 0, nread = 0, nread_total = 0;
+  input[0] = '\0';
   asynStatus status = m_det->write(output, strlen(output), &nwrite);
   while(status == asynSuccess || status == asynTimeout) {
 	  nread = 0;
@@ -332,7 +340,6 @@ asynStatus nGEMDriver::writeReadData(const char* output, char* input, size_t inp
 //  std::cout << "OUT:\"" << output << "\" nout=" << nwrite << std::endl;
   if (status != asynSuccess && status != asynTimeout)
   {
-      std::cerr << "STATUS:" << status << std::endl;
 	  return status;
   }
   if (nread_total < inputLen)
@@ -397,6 +404,14 @@ asynStatus nGEMDriver::readPairs(const char* command, map_t& map)
 {
   char input[1024];
   asynStatus status = writeReadData(command, input, sizeof(input));
+  if (status != asynSuccess)
+  {
+      for(map_t::const_iterator it = map.begin(); it != map.end(); ++it)
+      {
+          setParamStatus(it->second->param_id, asynError);
+      }
+      return asynError;
+  }
   std::vector<std::string> SplitVec;
   std::vector<std::string> PairVec;
   std::string str_input(input);
@@ -539,7 +554,10 @@ void nGEMDriver::pollerThreadC1(void* arg)
 int nGEMDriver::daqStatus()
 {
 	char daqStatus[20];
-	getStringParam(P_daqStatus, sizeof(daqStatus), daqStatus);
+	if (getStringParam(P_daqStatus, sizeof(daqStatus), daqStatus) != asynSuccess)
+	{
+		return -1;
+	}
 	if (!strcmp("Running", daqStatus))
 	{
 		return 1;
@@ -558,6 +576,7 @@ void nGEMDriver::pollerThread1()
 {
     static const char* functionName = "nGEMDriverPoller1";
 	int acquiring = 0;
+    asynStatus status;
 	while(true)
 	{
 		epicsThreadSleep(2.0);
@@ -587,7 +606,7 @@ asynStatus nGEMDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 //	const char* paramName;
 //	getParamName
 	char output[128], input[128];
-	asynStatus status;
+	asynStatus status = asynSuccess;
 	if (function < FIRST_NGEM_PARAM)
 	{
 		return ADDriver::writeInt32(pasynUser, value);
@@ -657,13 +676,20 @@ asynStatus nGEMDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 	}
 	else if (function == P_display)
 	{
-		setIntegerParam(P_display, value);
+		status = setIntegerParam(P_display, value);
 	}
 	else
 	{
 	    status = setGEMParam(function, value);
 	}
-	return asynPortDriver::writeInt32(pasynUser, value);
+    if (status == asynSuccess)
+    {
+	    return asynPortDriver::writeInt32(pasynUser, value);
+    }
+    else
+    {
+        return status;
+    }
 }
 
 template <typename T>
@@ -676,8 +702,7 @@ asynStatus nGEMDriver::setGEMParam(int param_id, T value)
 	    if (it->second->param_id == param_id)
 	    {
 		    oss << "setting " << it->first << ":" << value;
-	        writeReadData(oss.str().c_str(), input, sizeof(input));
-			return asynSuccess;
+	        return writeReadData(oss.str().c_str(), input, sizeof(input));
 		}
 	}
 	return asynError;
@@ -707,7 +732,14 @@ asynStatus nGEMDriver::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 	else
 	{
 	    status = setGEMParam(function, value);
-		return asynPortDriver::writeFloat64(pasynUser, value);
+        if (status == asynSuccess)
+        {
+		    return asynPortDriver::writeFloat64(pasynUser, value);
+        }
+        else
+        {
+            return status;
+        }
 	}
 }
 
@@ -743,7 +775,14 @@ asynStatus nGEMDriver::writeOctet(asynUser *pasynUser, const char *value, size_t
 	{
 	    status = setGEMParam(function, value_s);
 	}
-	return asynPortDriver::writeOctet(pasynUser, value, maxChars, nActual);
+    if (status == asynSuccess)
+    {
+	    return asynPortDriver::writeOctet(pasynUser, value, maxChars, nActual);
+    }
+    else
+    {
+        return status;
+    }
 }
 
 asynStatus nGEMDriver::readOctet(asynUser *pasynUser, char *value, size_t maxChars, size_t *nActual, int *eomReason)
@@ -1225,18 +1264,3 @@ static void nGEMRegister(void)
 epicsExportRegistrar(nGEMRegister);
 
 }
-
-
-#if 0
-asynStatus nGEMDriver::checkForOK(const char* input)
-{
-    if (strncmp(input, "OK:", 3) != 0)
-	{
-		return asynFailure;		
-	}
-	else
-	{
-		return asynSuccess;
-	}	
-}
-#endif
