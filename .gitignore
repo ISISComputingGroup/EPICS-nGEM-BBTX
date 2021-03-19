@@ -11,10 +11,11 @@ O.*/
 /templates/
 cdCommands
 envPaths
-dllPath.bat
+dllPath*.bat
 runIOC.bat
 runIOC.sh
 relPaths.sh
 .project
 *_info_positions.req
 *_info_settings.req
+NULL
