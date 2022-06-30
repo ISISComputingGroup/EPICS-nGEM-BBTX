@@ -171,11 +171,13 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
 	createParam(P_1dsytString, asynParamFloat64Array, &P_1dsyt);
 	createParam(P_tofString, asynParamFloat64Array, &P_tof);
 	createParam(P_ntofString, asynParamInt32, &P_ntof);
-	createParam(P_dirString, asynParamOctet, &P_dir);
 	createParam(P_dataModeString, asynParamInt32, &P_dataMode);
 	createParam(P_instRunNumberString, asynParamOctet, &P_instRunNumber);
 	createParam(P_instNameString, asynParamOctet, &P_instName);
+	createParam(P_dirString, asynParamOctet, &P_dir); // LAST_NGEM_BASE_PARAM
 	
+    // need to do all explicit createParam before any addParam
+    
 	// settings
     P_inst = addParam("inst", GroupSettings, asynParamOctet);
     P_basepath = addParam("basepath", GroupSettings, asynParamOctet);
@@ -678,7 +680,7 @@ asynStatus nGEMDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 	{
 		status = setIntegerParam(P_display, value);
 	}
-	else
+	else if (function > LAST_NGEM_BASE_PARAM)
 	{
 	    status = setGEMParam(function, value);
 	}
@@ -724,23 +726,23 @@ asynStatus nGEMDriver::readInt32(asynUser *pasynUser, epicsInt32* value)
 asynStatus nGEMDriver::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 {
 	int function = pasynUser->reason;
-	asynStatus status;
+	asynStatus status = asynSuccess;
 	if (function < FIRST_NGEM_PARAM)
 	{
 		return ADDriver::writeFloat64(pasynUser, value);
 	}
-	else
+	else if (function > LAST_NGEM_BASE_PARAM)
 	{
 	    status = setGEMParam(function, value);
-        if (status == asynSuccess)
-        {
-		    return asynPortDriver::writeFloat64(pasynUser, value);
-        }
-        else
-        {
-            return status;
-        }
-	}
+    }
+    if (status == asynSuccess)
+    {
+		return asynPortDriver::writeFloat64(pasynUser, value);
+    }
+    else
+    {
+        return status;
+    }
 }
 
 asynStatus nGEMDriver::readFloat64(asynUser *pasynUser, epicsFloat64* value)
@@ -760,7 +762,7 @@ asynStatus nGEMDriver::writeOctet(asynUser *pasynUser, const char *value, size_t
 {
 	std::string value_s(value, maxChars);
 	char input[1024];
-	asynStatus status;
+	asynStatus status = asynSuccess;
 	int function = pasynUser->reason;
 	if (function < FIRST_NGEM_PARAM)
 	{
@@ -770,8 +772,8 @@ asynStatus nGEMDriver::writeOctet(asynUser *pasynUser, const char *value, size_t
 	{
 		status = writeReadData(value_s.c_str(), input, sizeof(input));
 		setStringParam(P_commandReply, input);
-	}				
-	else
+	}		
+	else if (function > LAST_NGEM_BASE_PARAM)
 	{
 	    status = setGEMParam(function, value_s);
 	}

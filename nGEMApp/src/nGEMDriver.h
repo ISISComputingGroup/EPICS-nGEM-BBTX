@@ -58,7 +58,14 @@ private:
     int P_instRunNumber; // string
     int P_instName; // string
 	
-	// these are returned from addParam()
+	// calculated
+	int P_ntof; // integer
+	int P_tof; // float64array
+	int P_1dsxt; // float64array, x array for P_1dsx
+	int P_1dsyt; // float64array, x array for P_1dsy
+	int P_dir; // string, LAST_NGEM_BASE_PARAM 
+
+	// these are returned from addParam() and need to be after ones that are not
 	int P_daqStatus; // string
 	int P_runNo; // string
 	int P_inst; // string
@@ -67,16 +74,12 @@ private:
 	int P_tofmax; // double
 	int P_tofwidth; // double
 
-	// calculated
-	int P_ntof; // integer
-	int P_tof; // float64array
-	int P_1dsxt; // float64array, x array for P_1dsx
-	int P_1dsyt; // float64array, x array for P_1dsy
-	int P_dir; // string
-
-#define NUM_NGEM_PARAMS 100
 #define FIRST_NGEM_PARAM P_start
+#define LAST_NGEM_BASE_PARAM P_dir
 	
+// as we call addParam() we have more parameters than simply LAST - FIRST
+#define NUM_NGEM_PARAMS 100
+
 //	asynUser* m_detPort;
 	asynOctetClient* m_det;
 	int m_old_acquiring;

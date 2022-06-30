@@ -11,7 +11,8 @@ set "INSTDIR=%INSTNAME%%INSTRUN%"
 REM example archive directory, change locally
 set "ARCHIVE=C:\test"
 
-REM wait 30 seconds
-timeout /t 30 /nobreak >NUL
-
-robocopy "%BASE%\%DIR%" "%ARCHIVE%\%INSTDIR%\%DIR%" *.* /MOV /E
+if exist "%ARCHIVE%" (
+    REM wait 30 seconds
+    timeout /t 30 /nobreak >NUL
+    robocopy "%BASE%\%DIR%" "%ARCHIVE%\%INSTDIR%\%DIR%" *.* /MOV /E
+)
