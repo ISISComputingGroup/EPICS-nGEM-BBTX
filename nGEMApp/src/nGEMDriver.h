@@ -63,7 +63,11 @@ private:
 	int P_tof; // float64array
 	int P_1dsxt; // float64array, x array for P_1dsx
 	int P_1dsyt; // float64array, x array for P_1dsy
+    int P_archiveDir; // string
 	int P_dir; // string, LAST_NGEM_BASE_PARAM 
+
+#define FIRST_NGEM_PARAM P_start
+#define LAST_NGEM_BASE_PARAM P_dir
 
 	// these are returned from addParam() and need to be after ones that are not
 	int P_daqStatus; // string
@@ -73,9 +77,6 @@ private:
 	int P_tofmin; // double
 	int P_tofmax; // double
 	int P_tofwidth; // double
-
-#define FIRST_NGEM_PARAM P_start
-#define LAST_NGEM_BASE_PARAM P_dir
 	
 // as we call addParam() we have more parameters than simply LAST - FIRST
 #define NUM_NGEM_PARAMS 100
@@ -124,6 +125,7 @@ private:
 #define P_dataModeString		"DATAMODE"
 #define P_instRunNumberString	"INSTRUNNUMBER"
 #define P_instNameString		"INSTNAME"
+#define P_archiveDirString      "ARCHIVEDIR"
 
 struct nGEMParam
 {

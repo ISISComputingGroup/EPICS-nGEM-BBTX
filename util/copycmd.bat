@@ -6,12 +6,12 @@ set "DIR=%2"
 REM these are set by ISIS NDX instrument
 set "INSTNAME=%3"
 set "INSTRUN=%4"
+set "ARCHIVE=%5"
 
 set "INSTDIR=%INSTNAME%%INSTRUN%"
 REM example archive directory, change locally
-set "ARCHIVE=C:\test"
 
-if exist "%ARCHIVE%" (
+if "%ARCHIVE%" nes "" (
     REM wait 30 seconds
     timeout /t 30 /nobreak >NUL
     robocopy "%BASE%\%DIR%" "%ARCHIVE%\%INSTDIR%\%DIR%" *.* /MOV /E

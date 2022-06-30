@@ -174,6 +174,7 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
 	createParam(P_dataModeString, asynParamInt32, &P_dataMode);
 	createParam(P_instRunNumberString, asynParamOctet, &P_instRunNumber);
 	createParam(P_instNameString, asynParamOctet, &P_instName);
+	createParam(P_archiveDirString, asynParamOctet, &P_archiveDir);
 	createParam(P_dirString, asynParamOctet, &P_dir); // LAST_NGEM_BASE_PARAM
 	
     // need to do all explicit createParam before any addParam
@@ -260,6 +261,7 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
 
 	setIntegerParam(ADAcquire, 0);
     setStringParam(P_dir, "");
+    setStringParam(P_archiveDir, "");
     setStringParam(P_inst, "");
     setStringParam(P_basepath, "");
 	setIntegerParam(P_dataMode, 0);
@@ -372,8 +374,9 @@ void nGEMDriver::copyData()
 {
 	static const char* copycmd_ = getenv("NGEMCMD");
 	static const char* comspec = getenv("COMSPEC");
-	char dir[64], inst[10], basepath[512], instname[20];
+	char dir[128], inst[10], basepath[512], instname[20], archiveDir[128];
 	std::string copycmd;
+    dir[0] = archiveDir[0] = '\0';
 	if (copycmd_ == NULL) 
 	{
 		return;
@@ -382,15 +385,21 @@ void nGEMDriver::copyData()
 	{
 		return;
 	}
+	if ( (getStringParam(P_archiveDir, sizeof(archiveDir), archiveDir) != asynSuccess) || (strlen(archiveDir) == 0) )
+	{
+		return;
+	}
 	copycmd = copycmd_;
 	getStringParam(P_inst, sizeof(inst), inst);
 	getStringParam(P_basepath, sizeof(basepath), basepath);
 	getStringParam(P_instName, sizeof(instname), instname);
     pcrecpp::RE re("/cygdrive/([a-zA-Z])/(.*)");
-    std::string drive, basedir;
+    std::string drive, basedir, archivedir(archiveDir);
     re.FullMatch(basepath, &drive, &basedir);
 	std::replace(basedir.begin(), basedir.end(), '/', '\\');
 	std::replace(copycmd.begin(), copycmd.end(), '/', '\\');
+	std::replace(copycmd.begin(), copycmd.end(), '/', '\\');
+	std::replace(archivedir.begin(), archivedir.end(), '/', '\\');
 	std::string basepath_s = drive + ":\\" + basedir;
 	if (basedir.size() == 0)
 	{
@@ -398,7 +407,7 @@ void nGEMDriver::copyData()
 	}
 	std::cerr << "Running " << copycmd << " for " << dir << " in " << basepath_s << std::endl;
 #ifdef _WIN32
-    _spawnl(_P_NOWAIT, comspec, comspec, "/c", copycmd.c_str(), basepath_s.c_str(), dir, instname, m_instRunNumber, NULL);
+    _spawnl(_P_NOWAIT, comspec, comspec, "/c", copycmd.c_str(), basepath_s.c_str(), dir, instname, m_instRunNumber, archivedir.c_str(), NULL);
 #endif /* _WIN32 */
 }
 

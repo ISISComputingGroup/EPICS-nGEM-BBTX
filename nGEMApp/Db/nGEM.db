@@ -218,6 +218,26 @@ record(stringin, "$(P)$(Q)DIR")
 	info(archive, "VAL")
 }
 
+record(waveform, "$(P)$(Q)ARCHDIR")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP, "@asyn($(PORT),0,1)ARCHIVEDIR")
+	field(NELM, "128")
+	field(FTVL, "CHAR")
+	field(SCAN, "I/O Intr")
+	info(archive, "VAL")
+}
+
+record(waveform, "$(P)$(Q)ARCHDIR:SP")
+{
+    field(DTYP, "asynOctetWrite")
+    field(INP, "@asyn($(PORT),0,1)ARCHIVEDIR")
+	field(NELM, "128")
+	field(FTVL, "CHAR")
+	field(PINI, "YES")
+    info(autosaveFields, "VAL")
+}
+
 record(stringout, "$(P)$(Q)_INSTRUN")
 {
     field(DTYP, "asynOctetWrite")
