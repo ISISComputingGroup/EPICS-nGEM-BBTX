@@ -288,3 +288,18 @@ record(bi, "$(P)$(Q)WRITEFILE")
     field(ONAM, "Writing")
     field(OSV,  "MINOR")
 }
+
+record(lso, "$(P)$(Q)FILEPREFIX:SP")
+{
+    field(OUT, "$(P)$(Q)AD:TIFF1:FileName PP")
+	field(SIZV, "256")
+#    field(PINI, "YES")
+    info(autosaveFields, "VAL")
+}
+
+record(waveform, "$(P)$(Q)FILEPREFIX")
+{
+    field(INP, "$(P)$(Q)AD:TIFF1:FileName_RBV CP")
+	field(NELM, "256")
+	field(FTVL, "CHAR")
+}
