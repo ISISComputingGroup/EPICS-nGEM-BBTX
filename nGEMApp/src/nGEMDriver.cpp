@@ -175,6 +175,7 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
 	createParam(P_instRunNumberString, asynParamOctet, &P_instRunNumber);
 	createParam(P_instNameString, asynParamOctet, &P_instName);
 	createParam(P_archiveDirString, asynParamOctet, &P_archiveDir);
+    createParam(P_fileDirString, asynParamOctet, &P_fileDir);
 	createParam(P_dirString, asynParamOctet, &P_dir); // LAST_NGEM_BASE_PARAM
 	
     // need to do all explicit createParam before any addParam
@@ -264,6 +265,7 @@ nGEMDriver::nGEMDriver(const char *portName, const char* ipPortName)
     setStringParam(P_archiveDir, "");
     setStringParam(P_inst, "");
     setStringParam(P_basepath, "");
+    setStringParam(P_fileDir, "");
 	setIntegerParam(P_dataMode, 0);
 	setStringParam(P_instRunNumber, "00000000");
 	setStringParam(P_instName, "UNKNOWN");	
@@ -367,6 +369,20 @@ asynStatus nGEMDriver::readSettings()
 asynStatus nGEMDriver::readStats()
 {
 	return readPairs("stat", m_stats);
+}
+
+
+void nGEMDriver::getFileDir()
+{
+	char basepath[512], dir[128];
+	getStringParam(P_dir, sizeof(dir), dir);
+	getStringParam(P_basepath, sizeof(basepath), basepath);
+    pcrecpp::RE re("/cygdrive/([a-zA-Z])/(.*)");
+    std::string drive, basedir;
+    re.FullMatch(basepath, &drive, &basedir);
+	std::replace(basedir.begin(), basedir.end(), '/', '\\');
+	std::string basepath_s = drive + ":\\" + basedir + "\\" + dir;
+    setStringParam(P_fileDir, basepath_s.c_str());
 }
 
 // copyData() doesn't work on linux
@@ -596,6 +612,7 @@ void nGEMDriver::pollerThread1()
 		readStats();
 		computeTOF();
 		getIntegerParam(ADAcquire, &acquiring);
+        getFileDir();
 		if (daqStatus() == 1 && acquiring == 0)
 		{
 			getStringParam(P_instRunNumber, sizeof(m_instRunNumber), m_instRunNumber);

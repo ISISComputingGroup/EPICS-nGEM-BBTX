@@ -64,6 +64,7 @@ private:
 	int P_1dsxt; // float64array, x array for P_1dsx
 	int P_1dsyt; // float64array, x array for P_1dsy
     int P_archiveDir; // string
+    int P_fileDir; // string
 	int P_dir; // string, LAST_NGEM_BASE_PARAM 
 
 #define FIRST_NGEM_PARAM P_start
@@ -100,6 +101,7 @@ private:
 	asynStatus readSettings();
 	asynStatus readStats();
     asynStatus convertData(void* buffer, double* data, int nin, size_t& nout);
+    void getFileDir();
 };
 
 #define P_startString			"START"
@@ -126,6 +128,7 @@ private:
 #define P_instRunNumberString	"INSTRUNNUMBER"
 #define P_instNameString		"INSTNAME"
 #define P_archiveDirString      "ARCHIVEDIR"
+#define P_fileDirString       "FILEDIR"
 
 struct nGEMParam
 {

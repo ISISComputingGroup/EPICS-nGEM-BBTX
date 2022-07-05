@@ -253,3 +253,23 @@ record(stringout, "$(P)$(Q)_INSTNAME")
 	field(OMSL, "closed_loop")
 	field(OUT, "@asyn($(PORT),0,1)INSTNAME")
 }
+
+record(waveform, "$(P)$(Q)FILEDIR")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP, "@asyn($(PORT),0,1)FILEDIR")
+	field(NELM, "256")
+	field(FTVL, "CHAR")
+	field(SCAN, "I/O Intr")
+	info(archive, "VAL")
+	field(FLNK, "$(P)$(Q)FILEDIR_PUSH")
+}
+
+record(lso, "$(P)$(Q)FILEDIR_PUSH")
+{
+    field(DOL, "$(P)$(Q)FILEDIR")
+	field(SIZV, "256")
+	field(OMSL, "closed_loop")
+	field(OUT, "$(P)$(Q)AD:TIFF1:FilePath PP")
+}
+
