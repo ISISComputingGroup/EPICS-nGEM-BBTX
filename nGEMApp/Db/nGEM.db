@@ -273,3 +273,18 @@ record(lso, "$(P)$(Q)FILEDIR_PUSH")
 	field(OUT, "$(P)$(Q)AD:TIFF1:FilePath PP")
 }
 
+record(bo, "$(P)$(Q)WRITEFILE:SP")
+{
+	field(OUT, "$(P)$(Q)AD:TIFF1:WriteFile PP")
+    field(ZNAM, "Done")
+    field(ONAM, "Write")
+}
+
+record(bi, "$(P)$(Q)WRITEFILE")
+{
+    field(INP, "$(P)$(Q)AD:TIFF1:WriteFile_RBV CP")
+    field(ZNAM, "Done")
+    field(ZSV,  "NO_ALARM")
+    field(ONAM, "Writing")
+    field(OSV,  "MINOR")
+}
