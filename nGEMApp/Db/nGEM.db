@@ -261,7 +261,6 @@ record(waveform, "$(P)$(Q)FILEDIR")
 	field(NELM, "256")
 	field(FTVL, "CHAR")
 	field(SCAN, "I/O Intr")
-	info(archive, "VAL")
 	field(FLNK, "$(P)$(Q)FILEDIR_PUSH")
 }
 
