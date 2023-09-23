@@ -1,3 +1,10 @@
+/*************************************************************************\ 
+* Copyright (c) 2023 Science and Technology Facilities Council (STFC), GB. 
+* All rights reverved. 
+* This file is distributed subject to a Software License Agreement found 
+* in the file LICENSE.txt that is included with this distribution. 
+\*************************************************************************/ 
+
 #ifdef _WIN32
 #include <windows.h>
 #else

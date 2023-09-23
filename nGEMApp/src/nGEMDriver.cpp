@@ -1,3 +1,10 @@
+/*************************************************************************\ 
+* Copyright (c) 2023 Science and Technology Facilities Council (STFC), GB. 
+* All rights reverved. 
+* This file is distributed subject to a Software License Agreement found 
+* in the file LICENSE.txt that is included with this distribution. 
+\*************************************************************************/ 
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -34,9 +41,6 @@
 
 #include "envDefs.h"
 #include "errlog.h"
-
-#include "utilities.h"
-#include "pugixml.hpp"
 
 #include <asynOctetSyncIO.h>
 
