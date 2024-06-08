@@ -13,7 +13,7 @@ set "INSTDIR=%INSTNAME%%INSTRUN%"
 REM example archive directory, change locally
 
 if not "%ARCHIVE%" == "" (
-    REM wait 30 seconds
-    timeout /t 30 /nobreak >NUL
+    REM wait 30 seconds but avoid timeout command as does not work non interactively
+    ping -n 30 127.0.0.1 >NUL
     robocopy "%BASE%\%DIR%" "%ARCHIVE%\%INSTDIR%\%DIR%" *.* /MOV /E
 )
