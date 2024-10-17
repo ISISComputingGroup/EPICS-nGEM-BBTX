@@ -34,7 +34,7 @@ $(APPNAME)_DBD += drvAsynIPPort.dbd
 
 # Add all the support libraries needed by this IOC
 ## ISIS standard libraries ##
-$(APPNAME)_LIBS += nGEM webget htmltidy
+$(APPNAME)_LIBS += nGEM webget tidy
 $(APPNAME)_LIBS += seq pv
 $(APPNAME)_LIBS += devIocStats 
 $(APPNAME)_LIBS += pvdump $(MYSQLLIB) easySQLite sqlite 
